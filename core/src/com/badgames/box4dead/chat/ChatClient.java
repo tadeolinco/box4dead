@@ -1,31 +1,26 @@
 package com.badgames.box4dead.chat;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Net;
-import com.badlogic.gdx.net.Socket;
-import com.badlogic.gdx.net.SocketHints;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Scanner;
+import java.net.*;
 
 public class ChatClient {
     private Socket client;
     private Scanner scanner;
 
-    public ChatClient() {
-        SocketHints hints = new SocketHints();
-        client = Gdx.net.newClientSocket(Net.Protocol.TCP, "localhost", 9999, hints);
+    public ChatClient() throws IOException {
+
+        client = new Socket("localhost", 9999);
 
         scanner = new Scanner(System.in);
-        Gdx.app.log("Client", "What is your name?");
+        System.out.println("What is your name?");
+
         final String name = scanner.nextLine();
-        try {
-            client.getOutputStream().write((name + "\n").getBytes());
-        } catch(IOException e) {
-            Gdx.app.log(name, "Error in sending name");
-        }
+
+        client.getOutputStream().write((name + "\n").getBytes());
 
         // create a thread that will continuously listen for incoming message from the socket server
         new Thread(new Runnable() {
@@ -42,9 +37,11 @@ public class ChatClient {
                         String message = parts[1];
 
                         // print in console as "<name>: <message>"
-                        Gdx.app.log(name, message);
+                        System.out.println(name + ": " + message);
+//                        Gdx.app.log(name, message);
                     } catch (IOException e) {
-                        Gdx.app.log(name, "Error while receiving message", e);
+                        e.printStackTrace();
+//                        Gdx.app.log(name, "Error while receiving message", e);
                     }
                 }
             }
@@ -61,7 +58,8 @@ public class ChatClient {
                         String message = scanner.nextLine() + "\n";
                         client.getOutputStream().write(message.getBytes());
                     } catch (IOException e) {
-                        Gdx.app.log(name, "Error while sending message", e);
+                        e.printStackTrace();
+//                        Gdx.app.log(name, "Error while sending message", e);
                     }
                 }
             }

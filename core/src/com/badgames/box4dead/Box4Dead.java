@@ -7,19 +7,22 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
+import java.io.IOException;
+
 public class Box4Dead extends ApplicationAdapter {
 	SpriteBatch batch;
 	
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
-        
+
 		try {
 		    new ChatClient();
-        } catch(GdxRuntimeException e) {
-			Gdx.app.log("Server", "You are the server");
-            new ChatServer();
-            new ChatClient();
+        } catch(IOException e) {
+			try {
+				new ChatServer();
+				new ChatClient();
+			}catch (IOException ex){}
         }
 	}
 //
