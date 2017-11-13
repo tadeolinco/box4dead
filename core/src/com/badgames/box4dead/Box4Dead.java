@@ -20,6 +20,7 @@ public class Box4Dead extends ApplicationAdapter {
 		    new ChatClient();
         } catch(IOException e) {
 			try {
+				Gdx.app.log("Server", "You are the server");
 				new ChatServer();
 				new ChatClient();
 			}catch (IOException ex){}

@@ -1,9 +1,7 @@
 package com.badgames.box4dead.chat;
 
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.Scanner;
 import java.net.*;
 
@@ -19,8 +17,7 @@ public class ChatClient {
         System.out.println("What is your name?");
 
         final String name = scanner.nextLine();
-
-        client.getOutputStream().write((name + "\n").getBytes());
+        new DataOutputStream(client.getOutputStream()).writeUTF(name);
 
         // create a thread that will continuously listen for incoming message from the socket server
         new Thread(new Runnable() {
@@ -31,7 +28,7 @@ public class ChatClient {
                     try {
 
                         // data will have the form of "<name>@@<message>"
-                        String data = new BufferedReader(new InputStreamReader(client.getInputStream())).readLine();
+                        String data = new DataInputStream(client.getInputStream()).readUTF();
                         String[] parts = data.split("@@");
                         String name = parts[0];
                         String message = parts[1];
@@ -55,8 +52,8 @@ public class ChatClient {
                 // only run if the socket is still connected
                 while (client.isConnected()) {
                     try {
-                        String message = scanner.nextLine() + "\n";
-                        client.getOutputStream().write(message.getBytes());
+                        String message = scanner.nextLine();
+                        new DataOutputStream(client.getOutputStream()).writeUTF(message);
                     } catch (IOException e) {
                         e.printStackTrace();
 //                        Gdx.app.log(name, "Error while sending message", e);

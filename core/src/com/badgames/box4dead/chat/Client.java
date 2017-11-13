@@ -1,7 +1,7 @@
 package com.badgames.box4dead.chat;
 
 
-import com.badlogic.gdx.net.Socket;
+import java.net.Socket;
 
 public class Client {
     private Socket socket;
