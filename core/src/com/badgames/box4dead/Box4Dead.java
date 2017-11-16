@@ -24,6 +24,7 @@ public class Box4Dead extends ApplicationAdapter implements Runnable, Constants 
 		this.name = name;
 		try {
 			socket = new DatagramSocket();
+			socket.setSoTimeout(100);
 		} catch (SocketException e) {
 			e.printStackTrace();
 		}
@@ -56,9 +57,7 @@ public class Box4Dead extends ApplicationAdapter implements Runnable, Constants 
 
 			try {
 				socket.receive(packet);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			} catch (IOException e) {}
 
 			data = new String(buf).trim();
 
@@ -78,16 +77,16 @@ public class Box4Dead extends ApplicationAdapter implements Runnable, Constants 
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
-
-		try {
-		    new ChatClient();
-        } catch(IOException e) {
-			try {
-				Gdx.app.log("Server", "You are the server");
-				new ChatServer();
-				new ChatClient();
-			}catch (IOException ex){}
-        }
+//
+//		try {
+//		    new ChatClient();
+//        } catch(IOException e) {
+//			try {
+//				Gdx.app.log("Server", "You are the server");
+//				new ChatServer();
+//				new ChatClient();
+//			}catch (IOException ex){}
+//        }
 	}
 //
 //	@Override

@@ -14,12 +14,15 @@ public class GameServer implements Runnable, Constants{
     DatagramSocket serverSocket;
     int gameStage = WAITING_FOR_PLAYERS;
     GameState game;
+    int playerCount;
 
     public GameServer(int numOfPlayers) {
+        this.playerCount = 0;
         System.out.println("Server: Creating game");
         this.numOfPlayers = numOfPlayers;
         try {
             serverSocket = new DatagramSocket(PORT);
+            serverSocket.setSoTimeout(100);
         } catch (SocketException e) {
             System.out.println(e);
         }
@@ -56,7 +59,6 @@ public class GameServer implements Runnable, Constants{
             try{
                 serverSocket.receive(packet);
             }catch(IOException e) {
-                e.printStackTrace();
             }
 
             data = new String(buf).trim();
@@ -64,6 +66,18 @@ public class GameServer implements Runnable, Constants{
 
             switch (gameStage) {
                 // implement broadcasting here
+                case WAITING_FOR_PLAYERS:
+                    if (data.startsWith("CONNECT")) {
+                        String tokens[] = data.split(" ");
+                        NetPlayer player = new NetPlayer(tokens[1], packet.getAddress(), packet.getPort());
+                        System.out.println("Player connected: "+tokens[1]);
+                        game.update(tokens[1].trim(),player);
+                        broadcast("CONNECTED "+tokens[1]);
+                        playerCount++;
+                        if (playerCount==numOfPlayers){
+                            gameStage=GAME_START;
+                        }
+                    }
             }
         }
     }
