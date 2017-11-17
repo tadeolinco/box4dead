@@ -25,6 +25,7 @@ public class NetPlayer {
         return name;
     }
 
+    // string format: "PLAYER <name>"
     public String toString() {
         String retVal = "";
         retVal += "PLAYER ";
