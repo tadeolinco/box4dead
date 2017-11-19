@@ -78,6 +78,7 @@ public class GameServer implements Runnable, Constants{
                             gameStage=GAME_START;
                         }
                     }
+                    break;
             }
         }
     }
