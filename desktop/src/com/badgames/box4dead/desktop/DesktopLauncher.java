@@ -7,6 +7,7 @@ import com.badgames.box4dead.Box4Dead;
 
 public class DesktopLauncher {
 	public static void main (String[] arg) {
+		// launch window only in client mode
 		if (arg[0].equals("client")) {
 			LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
 			config.width = 1024;
@@ -15,7 +16,7 @@ public class DesktopLauncher {
 			String name = arg[2];
 			new LwjglApplication(new Box4Dead(server, name), config);
 		} else {
-			// Server side code here
+			// just run the server
 			int numOfPlayers = Integer.parseInt(arg[1]);
 			new GameServer(numOfPlayers);
 		}

@@ -8,13 +8,12 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.Iterator;
 
-public class GameServer implements Runnable, Constants{
-    int numOfPlayers;
-    String data;
+public class GameServer implements Runnable, Constants {
     DatagramSocket serverSocket;
-    int gameStage = WAITING_FOR_PLAYERS;
+    String data;
+
     GameState game;
-    int playerCount;
+    int playerCount, numOfPlayers,gameStage = WAITING_FOR_PLAYERS;
 
     public GameServer(int numOfPlayers) {
         this.playerCount = 0;
@@ -22,7 +21,9 @@ public class GameServer implements Runnable, Constants{
         this.numOfPlayers = numOfPlayers;
         try {
             serverSocket = new DatagramSocket(PORT);
+            // set the timeout for the socket so it wont block
             serverSocket.setSoTimeout(100);
+
         } catch (SocketException e) {
             System.out.println(e);
         }
@@ -31,11 +32,12 @@ public class GameServer implements Runnable, Constants{
         new Thread(this).start();
     }
 
+    // copied from CircleWards
     public void broadcast(String msg){
         for(Iterator ite = game.getPlayers().keySet().iterator(); ite.hasNext();){
             String name=(String)ite.next();
             NetPlayer player=(NetPlayer)game.getPlayers().get(name);
-            send(player,msg);
+            send(player, msg);
         }
     }
 
@@ -53,7 +55,7 @@ public class GameServer implements Runnable, Constants{
     @Override
     public void run() {
         while (true) {
-            // Get the data from players
+            // Get the data from a client
             byte[] buf = new byte[256];
             DatagramPacket packet = new DatagramPacket(buf, buf.length);
             try{
@@ -61,21 +63,21 @@ public class GameServer implements Runnable, Constants{
             }catch(IOException e) {
             }
 
+            // trim removes excess whitespace
             data = new String(buf).trim();
 
-
             switch (gameStage) {
-                // implement broadcasting here
                 case WAITING_FOR_PLAYERS:
+                    // tokens format: "CONNECT <player_name>"
                     if (data.startsWith("CONNECT")) {
                         String tokens[] = data.split(" ");
                         NetPlayer player = new NetPlayer(tokens[1], packet.getAddress(), packet.getPort());
-                        System.out.println("Player connected: "+tokens[1]);
+                        System.out.println("Player connected: " + tokens[1]);
                         game.update(tokens[1].trim(),player);
-                        broadcast("CONNECTED "+tokens[1]);
+                        broadcast("CONNECTED " + tokens[1]);
                         playerCount++;
-                        if (playerCount==numOfPlayers){
-                            gameStage=GAME_START;
+                        if (playerCount == numOfPlayers){
+                            gameStage = GAME_START;
                         }
                     }
                     break;
