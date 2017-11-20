@@ -33,7 +33,7 @@ public class Box4Dead extends ApplicationAdapter implements Constants {
 		this.name = name;
 		try {
 			socket = new DatagramSocket();
-			socket.setSoTimeout(100);
+			socket.setSoTimeout(10);
 		} catch (SocketException e) {
 			e.printStackTrace();
 		}
@@ -56,40 +56,8 @@ public class Box4Dead extends ApplicationAdapter implements Constants {
 
 	@Override
 	public void create () {
-	    Gdx.app.postRunnable(new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-                    try {
-                        Thread.sleep(1);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
 
-                    byte[] buf = new byte[256];
-                    DatagramPacket packet = new DatagramPacket(buf, buf.length);
 
-                    try {
-                        socket.receive(packet);
-                    } catch (IOException e) {}
-
-                    data = new String(buf).trim();
-
-                    if (!connected && data.startsWith("CONNECTED")) {
-                        connected = true;
-                        characters.add(new Character(name));
-                        System.out.println("CONNECTED");
-                    } else if (!connected) {
-                        System.out.println("CONNECTING");
-                        send("CONNECT " + name);
-                    } else if (connected) {
-                        // do logic here
-
-                    }
-
-                }
-            }
-        });
 		batch = new SpriteBatch();
 
 //		try {
@@ -103,19 +71,58 @@ public class Box4Dead extends ApplicationAdapter implements Constants {
 //        }
 	}
 
+	public void update() {
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+
+                byte[] buf = new byte[256];
+                DatagramPacket packet = new DatagramPacket(buf, buf.length);
+
+                try {
+                    socket.receive(packet);
+                } catch (IOException e) {}
+
+                data = new String(buf).trim();
+
+                if (!connected && data.startsWith("CONNECTED")) {
+                    connected = true;
+                    characters.add(new Character(name));
+                    System.out.println("CONNECTED");
+                } else if (!connected) {
+                    System.out.println("CONNECTING");
+                    send("CONNECT " + name);
+                } else if (connected) {
+                    // do logic here
+
+                }
+
+            }
+        });
+ }
+
+
 
 //	@Override
 	public void render () {
 		Gdx.gl.glClearColor(0, 0, 0.2f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        System.out.println("hello");
+		update();
+
+        for (Character character : characters) {
+            character.handleInput(Gdx.graphics.getDeltaTime());
+        }
+
 		batch.begin();
 		for (Character character : characters) {
-		    character.handleInput(Gdx.graphics.getDeltaTime());
-		    character.draw(batch);
+		    System.out.println("Drawing");
+		    batch.draw(character.getTexture(), character.getX(), character.getY());
         }
 		batch.end();
+
+
+
 	}
 	
 	@Override
