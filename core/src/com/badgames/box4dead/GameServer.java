@@ -1,18 +1,18 @@
 package com.badgames.box4dead;
 
-import com.badlogic.gdx.Gdx;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 public class GameServer implements Runnable, Constants {
     DatagramSocket serverSocket;
     String data;
 
-    GameState game;
+    private Map players;
     int playerCount, numOfPlayers,gameStage = WAITING_FOR_PLAYERS;
 
     public GameServer(int numOfPlayers) {
@@ -28,15 +28,15 @@ public class GameServer implements Runnable, Constants {
             System.out.println(e);
         }
 
-        game = new GameState();
+        players = new HashMap<String, NetPlayer>();
         new Thread(this).start();
     }
 
     // copied from CircleWards
     public void broadcast(String msg){
-        for(Iterator ite = game.getPlayers().keySet().iterator(); ite.hasNext();){
+        for(Iterator ite = players.keySet().iterator(); ite.hasNext();){
             String name=(String)ite.next();
-            NetPlayer player=(NetPlayer)game.getPlayers().get(name);
+            NetPlayer player=(NetPlayer)players.get(name);
             send(player, msg);
         }
     }
@@ -73,7 +73,7 @@ public class GameServer implements Runnable, Constants {
                         String tokens[] = data.split(" ");
                         NetPlayer player = new NetPlayer(tokens[1], packet.getAddress(), packet.getPort());
                         System.out.println("Player connected: " + tokens[1]);
-                        game.update(tokens[1].trim(),player);
+                        players.put(tokens[1].trim(),player);
                         broadcast("CONNECTED " + tokens[1]);
                         playerCount++;
                         if (playerCount == numOfPlayers){

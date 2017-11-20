@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -18,13 +19,14 @@ import java.net.InetAddress;
 import java.net.SocketException;
 
 
-public class Box4Dead extends ApplicationAdapter implements Runnable, Constants {
+public class Box4Dead extends ApplicationAdapter implements Constants {
 	SpriteBatch batch;
 	String server, data, name;
 	boolean connected;
 	DatagramSocket socket;
-	Texture playerChar;
-	Character player;
+
+	Array<Character> characters;
+
 
 	public Box4Dead(String server, String name) {
 		this.server = server;
@@ -36,7 +38,9 @@ public class Box4Dead extends ApplicationAdapter implements Runnable, Constants 
 			e.printStackTrace();
 		}
 
-		new Thread(this).start();
+
+        characters = new Array<Character>();
+
 	}
 
 
@@ -51,42 +55,42 @@ public class Box4Dead extends ApplicationAdapter implements Runnable, Constants 
 	}
 
 	@Override
-	public void run() {
-		while (true) {
-			try {
-				Thread.sleep(1);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-
-			byte[] buf = new byte[256];
-			DatagramPacket packet = new DatagramPacket(buf, buf.length);
-
-			try {
-				socket.receive(packet);
-			} catch (IOException e) {}
-
-			data = new String(buf).trim();
-
-			if (!connected && data.startsWith("CONNECTED")) {
-				connected = true;
-				System.out.println("CONNECTED");
-			} else if (!connected) {
-				System.out.println("CONNECTING");
-				send("CONNECT " + name);
-			} else if (connected) {
-				// do logic here
-
-			}
-
-		}
-	}
-	
-	@Override
 	public void create () {
+	    Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        Thread.sleep(1);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    byte[] buf = new byte[256];
+                    DatagramPacket packet = new DatagramPacket(buf, buf.length);
+
+                    try {
+                        socket.receive(packet);
+                    } catch (IOException e) {}
+
+                    data = new String(buf).trim();
+
+                    if (!connected && data.startsWith("CONNECTED")) {
+                        connected = true;
+                        characters.add(new Character(name));
+                        System.out.println("CONNECTED");
+                    } else if (!connected) {
+                        System.out.println("CONNECTING");
+                        send("CONNECT " + name);
+                    } else if (connected) {
+                        // do logic here
+
+                    }
+
+                }
+            }
+        });
 		batch = new SpriteBatch();
-		playerChar = new Texture("char.png");
-		player = new Character(playerChar);
 
 //		try {
 //		    new ChatClient();
@@ -98,24 +102,27 @@ public class Box4Dead extends ApplicationAdapter implements Runnable, Constants 
 //			}catch (IOException ex){}
 //        }
 	}
-//
 
 
-	@Override
+//	@Override
 	public void render () {
 		Gdx.gl.glClearColor(0, 0, 0.2f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		player.handleInput(Gdx.graphics.getDeltaTime());
 
+        System.out.println("hello");
 		batch.begin();
-		if(player != null){
-			player.draw(batch);
-		}
+		for (Character character : characters) {
+		    character.handleInput(Gdx.graphics.getDeltaTime());
+		    character.draw(batch);
+        }
 		batch.end();
 	}
 	
 	@Override
 	public void dispose () {
 		batch.dispose();
+        for (Character character : characters) {
+            character.getTexture().dispose();
+        }
 	}
 }
