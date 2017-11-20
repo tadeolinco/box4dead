@@ -62,17 +62,17 @@ public class GameServer extends ApplicationAdapter implements Constants {
                     // create a new character
                     Character character = new Character(tokens[1]);
                     character.setId(tokens[0]);
-                    characters.put(character.getID(), character);
+                    characters.put(character.getId(), character);
 
                     // Get all characters into one string
                     String allCharacters = "";
                     for (Iterator ite = characters.values(); ite.hasNext();) {
                         Character c = (Character) ite.next();
-                        allCharacters += payload(c.getID(), c.getName());
+                        allCharacters += payload(c.getId(), c.getName());
                     }
 
                     // broadcast to every net player about that new character
-                    broadcast(action(ADD_PLAYER, payload(character.getID(), character.getName())));
+                    broadcast(action(ADD_PLAYER, payload(character.getId(), character.getName())));
 
                     // send to only the new player
                     send(player, action(RECEIVE_ALL, allCharacters));

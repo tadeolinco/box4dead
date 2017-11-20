@@ -91,7 +91,7 @@ public class Box4Dead extends ApplicationAdapter implements Constants {
                     for (int i = 0; i < tokens.length / 2; ++i) {
                         Character character = new Character(tokens[2 * i + 1]);
                         character.setId(tokens[2 * i + 0]);
-                        characters.put(character.getID(), character);
+                        characters.put(character.getId(), character);
                     }
                 }
 
@@ -99,14 +99,16 @@ public class Box4Dead extends ApplicationAdapter implements Constants {
                 if (action.equals(ADD_PLAYER)) {
                     Character character = new Character(tokens[1]);
                     character.setId(tokens[0]);
-                    characters.put(character.getID(), character);
+                    characters.put(character.getId(), character);
                 }
 
-                // expected payload: id x y
+                // expected payload: id x y hDirection vDirection
                 if (action.equals(MOVE_PLAYER)) {
                     Character character = (Character) characters.get(tokens[0]);
                     character.setX(Float.parseFloat(tokens[1]));
                     character.setY(Float.parseFloat(tokens[2]));
+                    character.sethDirection(Integer.parseInt(tokens[3]));
+                    character.setvDirection(Integer.parseInt(tokens[4]));
                 }
 
 
@@ -117,10 +119,10 @@ public class Box4Dead extends ApplicationAdapter implements Constants {
     public void update() {
         for (Iterator ite = characters.values(); ite.hasNext();) {
             Character character = (Character) ite.next();
-            if (id.equals(character.getID())) {
+            if (id.equals(character.getId())) {
                 boolean touched = character.handleInput(Gdx.graphics.getDeltaTime());
                 if (touched) {
-                    send(action(MOVE_PLAYER, payload(character.getID(), character.getX(), character.getY())));
+                    send(action(MOVE_PLAYER, payload(character.getId(), character.getX(), character.getY(), character.gethDirection(), character.getvDirection())));
                 }
             }
         }
