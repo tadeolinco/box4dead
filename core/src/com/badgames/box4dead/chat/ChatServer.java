@@ -60,13 +60,13 @@ public class ChatServer {
                                     try {
                                         client.getSocket().close();
                                     } catch(IOException e) {
-                                        Gdx.app.log("Server", "Error in closing socket");
+                                        Gdx.app.log("GameServer", "Error in closing socket");
                                     }
                                     clients.removeValue(client, false);
                                 }
                             }).start();
                         } catch(IOException e) {
-                            Gdx.app.log("Server", "Failed to receive name of client");
+                            Gdx.app.log("GameServer", "Failed to receive name of client");
                         }
                     }
                 }

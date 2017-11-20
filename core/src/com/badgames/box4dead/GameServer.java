@@ -1,88 +1,136 @@
 package com.badgames.box4dead;
 
+import com.badgames.box4dead.sprites.Character;
+import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.utils.ObjectMap;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.Iterator;
+import java.util.UUID;
 
-public class GameServer implements Runnable, Constants {
-    DatagramSocket serverSocket;
-    String data;
+public class GameServer extends ApplicationAdapter implements Constants {
+    private ObjectMap characters, players;
+    private DatagramSocket socket;
+    private DatagramPacket packet;
+    private String data, action, payload;
+    private String[] tokens;
 
-    GameState game;
-    int playerCount, numOfPlayers,gameStage = WAITING_FOR_PLAYERS;
+    @Override
+    public void create() {
+        super.create();
+        characters = new ObjectMap();
+        players = new ObjectMap();
 
-    public GameServer(int numOfPlayers) {
-        this.playerCount = 0;
-        System.out.println("Server: Creating game");
-        this.numOfPlayers = numOfPlayers;
         try {
-            serverSocket = new DatagramSocket(PORT);
-            // set the timeout for the socket so it wont block
-            serverSocket.setSoTimeout(100);
-
-        } catch (SocketException e) {
-            System.out.println(e);
+            socket = new DatagramSocket(PORT);
+            socket.setSoTimeout(1);
+        } catch (SocketException e){
+            e.printStackTrace();
         }
-
-        game = new GameState();
-        new Thread(this).start();
     }
 
-    // copied from CircleWards
+    public void listen() {
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+                byte[] buf = new byte[256];
+                packet = new DatagramPacket(buf, buf.length);
+
+                try {
+                    socket.receive(packet);
+                } catch(IOException e) {}
+
+                data = new String(buf).trim();
+
+                if (data.equals("")) return;
+
+                tokens = data.split(DELIMITER);
+                action = tokens[0];
+                payload = tokens[1];
+                tokens = payload.split(" ");
+
+                // expected payload: id name
+                if (action.equals(CONNECT)) {
+                    // create a new net player
+                    NetPlayer player = new NetPlayer(packet.getAddress(), packet.getPort());
+                    players.put(player.getID(), player);
+
+                    // create a new character
+                    Character character = new Character(tokens[1]);
+                    character.setId(tokens[0]);
+                    characters.put(character.getId(), character);
+
+                    // Get all characters into one string
+                    String allCharacters = "";
+                    for (Iterator ite = characters.values(); ite.hasNext();) {
+                        Character c = (Character) ite.next();
+                        allCharacters += payload(c.getId(), c.getName());
+                    }
+
+                    // broadcast to every net player about that new character
+                    broadcast(action(ADD_PLAYER, payload(character.getId(), character.getName())));
+
+                    // send to only the new player
+                    send(player, action(RECEIVE_ALL, allCharacters));
+                }
+                else {
+                    // enumerate all catch cases here:
+                    // MOVE_PLAYER
+                    broadcast(data);
+                }
+            }
+        });
+    }
+
+
+
+    @Override
+    public void render() {
+        super.render();
+
+        listen();
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        for (Iterator ite = characters.values(); ite.hasNext();) {
+            Character character = (Character) ite.next();
+            character.getTexture().dispose();
+        }
+    }
+
     public void broadcast(String msg){
-        for(Iterator ite = game.getPlayers().keySet().iterator(); ite.hasNext();){
-            String name=(String)ite.next();
-            NetPlayer player=(NetPlayer)game.getPlayers().get(name);
+        for(Iterator ite = players.values(); ite.hasNext();){
+            NetPlayer player = (NetPlayer) ite.next();
             send(player, msg);
         }
     }
 
-    public void send(NetPlayer player, String msg){
-        DatagramPacket packet;
+    public void send(NetPlayer player, String msg) {
         byte buf[] = msg.getBytes();
-        packet = new DatagramPacket(buf, buf.length, player.getAddress(),player.getPort());
+        DatagramPacket packet = new DatagramPacket(buf, buf.length, player.getAddress(), player.getPort());
         try{
-            serverSocket.send(packet);
+            socket.send(packet);
         }catch(IOException e){
             e.printStackTrace();
         }
     }
 
-    @Override
-    public void run() {
-        while (true) {
-            // Get the data from a client
-            byte[] buf = new byte[256];
-            DatagramPacket packet = new DatagramPacket(buf, buf.length);
-            try{
-                serverSocket.receive(packet);
-            }catch(IOException e) {
-            }
 
-            // trim removes excess whitespace
-            data = new String(buf).trim();
-
-            switch (gameStage) {
-                case WAITING_FOR_PLAYERS:
-                    // tokens format: "CONNECT <player_name>"
-                    if (data.startsWith("CONNECT")) {
-                        String tokens[] = data.split(" ");
-                        NetPlayer player = new NetPlayer(tokens[1], packet.getAddress(), packet.getPort());
-                        System.out.println("Player connected: " + tokens[1]);
-                        game.update(tokens[1].trim(),player);
-                        broadcast("CONNECTED " + tokens[1]);
-                        playerCount++;
-                        if (playerCount == numOfPlayers){
-                            gameStage = GAME_START;
-                        }
-                    }
-                    break;
-            }
-        }
+    public String action(String action, String payload) {
+        return action + DELIMITER + payload;
     }
 
+    public String payload(Object ...args) {
+        String value = "";
+        for (Object arg : args) {
+            value += arg.toString() + " ";
+        }
+        return value;
+    }
 }

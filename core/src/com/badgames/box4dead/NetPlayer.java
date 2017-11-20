@@ -1,14 +1,15 @@
 package com.badgames.box4dead;
 
 import java.net.InetAddress;
+import java.util.UUID;
 
 public class NetPlayer {
     private InetAddress address;
+    private String id;
     private int port;
-    private String name;
 
-    public NetPlayer(String name, InetAddress address, int port) {
-        this.name = name;
+    public NetPlayer(InetAddress address, int port) {
+        this.id = UUID.randomUUID().toString();
         this.address = address;
         this.port = port;
     }
@@ -17,19 +18,17 @@ public class NetPlayer {
         return address;
     }
 
-    public int getPort() {
-        return port;
+    public String getID() {
+        return id;
     }
 
-    public String getName() {
-        return name;
-    }
+    public int getPort() { return port; }
 
     // string format: "PLAYER <name>"
     public String toString() {
         String retVal = "";
         retVal += "PLAYER ";
-        retVal += name;
+        retVal += id;
         return retVal;
     }
 
