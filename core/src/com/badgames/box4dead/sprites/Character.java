@@ -5,13 +5,19 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Json;
+
+import java.util.UUID;
 
 public class Character extends Sprite{
+
     String name;
+    String id;
     Vector2 previousPosition;
-    public Character(String name){
+    public Character(String id, String name){
         super();
         this.name = name;
+        this.id = id;
         previousPosition = new Vector2(getX(), getY());
         this.setTexture(new Texture("char.png"));
         this.setBounds(0, 0, this.getWidth(), this.getHeight());
@@ -38,5 +44,16 @@ public class Character extends Sprite{
         }
         this.setBounds(this.getX(), this.getY(),this.getWidth(), this.getHeight());
     }
+
+
+    public String getName() {
+        return name;
+    }
+    public String getID() { return id; }
+
+    public String toString() {
+        return id;
+    }
+
 
 }
