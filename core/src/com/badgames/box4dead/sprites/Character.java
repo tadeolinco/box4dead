@@ -6,53 +6,54 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 
 import java.util.UUID;
 
-public class Character extends Sprite{
+public class Character extends Sprite {
+    String id, name;
 
-    String name;
-    String id;
-    Vector2 previousPosition;
-    public Character(String id, String name){
+    public Character(String name){
         super();
         this.name = name;
-        this.id = id;
-        previousPosition = new Vector2(getX(), getY());
+        this.id = UUID.randomUUID().toString();
         this.setTexture(new Texture("char.png"));
         this.setBounds(0, 0, this.getWidth(), this.getHeight());
     }
 
-    public boolean hasMoved(){
-        if(previousPosition.x != getX() || previousPosition.y != getY()){
-            previousPosition.x = getX();
-            previousPosition.y = getY();
-            return true;
-        }
-        return false;
-    }
 
-    public void handleInput(float dt){
+    public boolean handleInput(float dt){
+        boolean touched = false;
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
             this.setPosition(this.getX() + (-200 * dt), this.getY());
+            touched = true;
         } else if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
             this.setPosition(this.getX() + (+200 * dt), this.getY());
+            touched = true;
         }else if(Gdx.input.isKeyPressed(Input.Keys.UP)){
             this.setPosition(this.getX(), this.getY() + (+200 * dt));
+            touched = true;
         }else if(Gdx.input.isKeyPressed(Input.Keys.DOWN)){
             this.setPosition(this.getX(), this.getY() + (-200 * dt));
+            touched = true;
         }
         this.setBounds(this.getX(), this.getY(),this.getWidth(), this.getHeight());
+        return touched;
     }
 
+
+    public String getID() { return id; }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;
     }
-    public String getID() { return id; }
 
-    public String toString() {
-        return id;
+    public void setName(String name) {
+        this.name = name;
     }
 
 
