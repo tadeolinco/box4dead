@@ -1,12 +1,13 @@
 package com.badgames.box4dead;
 
+import com.badgames.box4dead.sprites.Bullet;
 import com.badgames.box4dead.sprites.Character;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.ObjectMap;
+import com.sun.org.apache.bcel.internal.generic.FLOAD;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -26,6 +27,7 @@ public class Box4Dead extends ApplicationAdapter implements Constants {
 	String[] tokens;
 
     private ObjectMap characters;
+    private ObjectMap bullets;
 
 
 	public Box4Dead(String server, String name) {
@@ -34,12 +36,13 @@ public class Box4Dead extends ApplicationAdapter implements Constants {
 		this.id = UUID.randomUUID().toString();
         try {
             socket = new DatagramSocket();
-            socket.setSoTimeout(1);
+            socket.setSoTimeout(SOCKET_TIMEOUT);
         } catch (SocketException e){
             e.printStackTrace();
         }
 
         characters = new ObjectMap();
+        bullets = new ObjectMap();
 	}
 
 
@@ -47,6 +50,122 @@ public class Box4Dead extends ApplicationAdapter implements Constants {
 	public void create () {
 		batch = new SpriteBatch();
 
+		new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    byte[] buf = new byte[256];
+                    packet = new DatagramPacket(buf, buf.length);
+
+                    try {
+                        socket.receive(packet);
+                    } catch (IOException e) {}
+
+                    data = new String(buf).trim();
+
+
+                    if (!connected) {
+                        System.out.println("CONNECTING");
+                        send(action(CONNECT, payload(id, name)));
+                        connected = true;
+                    }
+
+                    if (data.equals("")) continue;
+
+                    System.out.println("Received: " + data);
+                    tokens = data.split(DELIMITER);
+                    action = tokens[0];
+                    payload = tokens[1];
+
+                    // expected payload (id name )++
+                    if (action.equals(RECEIVE_ALL)) {
+                        final String[] tokens = payload.split(" ");
+                        Gdx.app.postRunnable(new Runnable() {
+                            @Override
+                            public void run() {
+                                for (int i = 0; i < tokens.length / 2; ++i) {
+                                    Character character = new Character(tokens[2 * i + 1]);
+                                    character.setId(tokens[2 * i + 0]);
+                                    characters.put(character.getId(), character);
+                                }
+                            }
+                        });
+                    }
+
+                    // expected payload: id name
+                    if (action.equals(ADD_PLAYER)) {
+                        final String[] tokens = payload.split(" ");
+                        Gdx.app.postRunnable(new Runnable() {
+                            @Override
+                            public void run() {
+                                Character character = new Character(tokens[1]);
+                                character.setId(tokens[0]);
+                                characters.put(character.getId(), character);
+                            }
+                        });
+                    }
+
+                    // expected payload: id x y hDirection vDirection
+                    if (action.equals(MOVE_PLAYER)) {
+                        final String[] tokens = payload.split(" ");
+                        Gdx.app.postRunnable(new Runnable() {
+                            @Override
+                            public void run() {
+                                Character character = (Character) characters.get(tokens[0]);
+                                if (character != null) {
+                                    character.setX(Float.parseFloat(tokens[1]));
+                                    character.setY(Float.parseFloat(tokens[2]));
+                                }
+//                              character.setHDirection(Integer.parseInt(tokens[3]));
+//                              character.setVDirection(Integer.parseInt(tokens[4]));
+                            }
+                        });
+                    }
+
+                    // expected payload: id x y facing
+                    if (action.equals(ADD_BULLET)) {
+                        final String[] tokens = payload.split(" ");
+                        final float x = Float.parseFloat(tokens[1]);
+                        final float y = Float.parseFloat(tokens[2]);
+                        final int facing = Integer.parseInt(tokens[3]);
+                        Gdx.app.postRunnable(new Runnable() {
+                            @Override
+                            public void run() {
+                                Bullet bullet = new Bullet(x, y, facing);
+                                bullet.setId(tokens[0]);
+                                bullets.put(bullet.getId(), bullet);
+                            }
+                        });
+                    }
+
+                    // expected payload: id, x, y
+                    if (action.equals(MOVE_BULLET)) {
+                        final String[] tokens = payload.split(" ");
+                        Gdx.app.postRunnable(new Runnable() {
+                            @Override
+                            public void run() {
+                                Bullet bullet = (Bullet) bullets.get(tokens[0]);
+                                if (bullet != null) {
+                                    bullet.setX(Float.parseFloat(tokens[1]));
+                                    bullet.setY(Float.parseFloat(tokens[2]));
+                                }
+                            }
+                        });
+                    }
+
+                    // expected payload: id
+                    if (action.equals(KILL_BULLET)) {
+                        final String[] tokens = payload.split(" ");
+                        Gdx.app.postRunnable(new Runnable() {
+                            @Override
+                            public void run() {
+                                bullets.remove(tokens[0]);
+                            }
+                        });
+                    }
+                }
+            }
+        }).start();
 //		try {
 //		    new ChatClient();
 //        } catch(IOException e) {
@@ -58,72 +177,19 @@ public class Box4Dead extends ApplicationAdapter implements Constants {
 //        }
 	}
 
-	public void listen() {
-        Gdx.app.postRunnable(new Runnable() {
-            @Override
-            public void run() {
-                byte[] buf = new byte[256];
-                packet = new DatagramPacket(buf, buf.length);
-
-                try {
-                    socket.receive(packet);
-                } catch (IOException e) {}
-
-                data = new String(buf).trim();
-
-
-                if (!connected) {
-                    System.out.println("CONNECTING");
-                    send(action(CONNECT, payload(id, name)));
-                    connected = true;
-                }
-
-                if (data.equals("")) return;
-
-                System.out.println("Received: " + data);
-                tokens = data.split(DELIMITER);
-                action = tokens[0];
-                payload = tokens[1];
-                tokens = payload.split(" ");
-
-                // expected payload (id name )++
-                if (action.equals(RECEIVE_ALL)) {
-                    for (int i = 0; i < tokens.length / 2; ++i) {
-                        Character character = new Character(tokens[2 * i + 1]);
-                        character.setId(tokens[2 * i + 0]);
-                        characters.put(character.getId(), character);
-                    }
-                }
-
-                // expected payload: id name
-                if (action.equals(ADD_PLAYER)) {
-                    Character character = new Character(tokens[1]);
-                    character.setId(tokens[0]);
-                    characters.put(character.getId(), character);
-                }
-
-                // expected payload: id x y hDirection vDirection
-                if (action.equals(MOVE_PLAYER)) {
-                    Character character = (Character) characters.get(tokens[0]);
-                    character.setX(Float.parseFloat(tokens[1]));
-                    character.setY(Float.parseFloat(tokens[2]));
-                    character.sethDirection(Integer.parseInt(tokens[3]));
-                    character.setvDirection(Integer.parseInt(tokens[4]));
-                }
-
-
-            }
-        });
-    }
-
     public void update() {
-        for (Iterator ite = characters.values(); ite.hasNext();) {
-            Character character = (Character) ite.next();
-            if (id.equals(character.getId())) {
-                boolean touched = character.handleInput(Gdx.graphics.getDeltaTime());
-                if (touched) {
-                    send(action(MOVE_PLAYER, payload(character.getId(), character.getX(), character.getY(), character.gethDirection(), character.getvDirection())));
-                }
+	    Character character = (Character) characters.get(id);
+//      boolean touched = character.handleMove(Gdx.graphics.getDeltaTime());
+//      if (touched) {
+//          send(action(MOVE_PLAYER, payload(character.getId(), character.getX(), character.getY(), character.getHDirection(), character.getVDirection())));
+//      }
+        if (character != null) {
+            int move = character.handleMove2();
+             if (move != STILL) {
+                send(action(MOVE_PLAYER, payload(character.getId(), move)));
+            }
+            if (character.handleShoot()) {
+                send(action(ADD_BULLET, payload(character.getX(), character.getY(), character.getHDirection(), character.getVDirection())));
             }
         }
     }
@@ -133,13 +199,16 @@ public class Box4Dead extends ApplicationAdapter implements Constants {
 		Gdx.gl.glClearColor(0, 0, 0.2f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-		listen();
         update();
 
         batch.begin();
         for (Iterator ite = characters.values(); ite.hasNext();) {
             Character character = (Character) ite.next();
             batch.draw(character.getTexture(), character.getX(), character.getY());
+        }
+        for (Iterator ite = bullets.values(); ite.hasNext();) {
+            Bullet bullet = (Bullet) ite.next();
+            batch.draw(bullet.getTexture(), bullet.getX(), bullet.getY());
         }
         batch.end();
 	}
@@ -159,8 +228,8 @@ public class Box4Dead extends ApplicationAdapter implements Constants {
 
     public String payload(Object ...args) {
         String value = "";
-        for (Object arg : args) {
-            value += arg.toString() + " ";
+        for (int i = 0; i < args.length; ++i) {
+            value += args[i].toString() + " ";
         }
         return value;
     }
@@ -169,7 +238,7 @@ public class Box4Dead extends ApplicationAdapter implements Constants {
         try{
             byte[] buf = msg.getBytes();
             InetAddress address = InetAddress.getByName(server);
-            DatagramPacket packet = new DatagramPacket(buf, buf.length, address, PORT);
+            packet = new DatagramPacket(buf, buf.length, address, PORT);
             socket.send(packet);
         }catch(IOException e){
             e.printStackTrace();
