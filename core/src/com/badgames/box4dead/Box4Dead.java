@@ -3,11 +3,12 @@ package com.badgames.box4dead;
 import com.badgames.box4dead.sprites.Bullet;
 import com.badgames.box4dead.sprites.Character;
 import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ObjectMap;
-import com.sun.org.apache.bcel.internal.generic.FLOAD;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -18,7 +19,7 @@ import java.util.Iterator;
 import java.util.UUID;
 
 
-public class Box4Dead extends ApplicationAdapter implements Constants {
+public class Box4Dead extends Game implements Constants {
 	SpriteBatch batch;
 	String server, name, data, action, payload, id;
 	boolean connected;
@@ -28,6 +29,8 @@ public class Box4Dead extends ApplicationAdapter implements Constants {
 
     private ObjectMap characters;
     private ObjectMap bullets;
+    private Assets assets;
+    private OrthographicCamera camera;
 
 
 	public Box4Dead(String server, String name) {
@@ -43,12 +46,17 @@ public class Box4Dead extends ApplicationAdapter implements Constants {
 
         characters = new ObjectMap();
         bullets = new ObjectMap();
+        assets = new Assets();
 	}
 
 
 	@Override
 	public void create () {
+	    assets.load();
+        assets.getManager().finishLoading();
 		batch = new SpriteBatch();
+		camera = new OrthographicCamera();
+		camera.setToOrtho(false, GAME_WIDTH, GAME_HEIGHT);
 
 		new Thread(new Runnable() {
             @Override
@@ -105,7 +113,7 @@ public class Box4Dead extends ApplicationAdapter implements Constants {
                         });
                     }
 
-                    // expected payload: id x y hDirection vDirection
+                    // expected payload: id x y facing
                     if (action.equals(MOVE_PLAYER)) {
                         final String[] tokens = payload.split(" ");
                         Gdx.app.postRunnable(new Runnable() {
@@ -113,11 +121,8 @@ public class Box4Dead extends ApplicationAdapter implements Constants {
                             public void run() {
                                 Character character = (Character) characters.get(tokens[0]);
                                 if (character != null) {
-                                    character.setX(Float.parseFloat(tokens[1]));
-                                    character.setY(Float.parseFloat(tokens[2]));
+                                    character.move(Float.parseFloat(tokens[1]), Float.parseFloat(tokens[2]), Integer.parseInt(tokens[3]));
                                 }
-//                              character.setHDirection(Integer.parseInt(tokens[3]));
-//                              character.setVDirection(Integer.parseInt(tokens[4]));
                             }
                         });
                     }
@@ -179,17 +184,13 @@ public class Box4Dead extends ApplicationAdapter implements Constants {
 
     public void update() {
 	    Character character = (Character) characters.get(id);
-//      boolean touched = character.handleMove(Gdx.graphics.getDeltaTime());
-//      if (touched) {
-//          send(action(MOVE_PLAYER, payload(character.getId(), character.getX(), character.getY(), character.getHDirection(), character.getVDirection())));
-//      }
         if (character != null) {
-            int move = character.handleMove2();
-             if (move != STILL) {
-                send(action(MOVE_PLAYER, payload(character.getId(), move)));
+            boolean hasMoved = character.handleMove();
+             if (hasMoved) {
+                send(action(MOVE_PLAYER, payload(character.getId(), character.getX(), character.getY(), character.getFacing())));
             }
             if (character.handleShoot()) {
-                send(action(ADD_BULLET, payload(character.getX(), character.getY(), character.getHDirection(), character.getVDirection())));
+                send(action(ADD_BULLET, payload(character.getX(), character.getY())));
             }
         }
     }
@@ -199,6 +200,8 @@ public class Box4Dead extends ApplicationAdapter implements Constants {
 		Gdx.gl.glClearColor(0, 0, 0.2f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+		camera.update();
+		batch.setProjectionMatrix(camera.combined);
         update();
 
         batch.begin();

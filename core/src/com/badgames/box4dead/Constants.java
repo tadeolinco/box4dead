@@ -10,10 +10,12 @@ public interface Constants {
     int UP = 0;
     int DOWN = 1;
     int RIGHT = 2;
-    int LEFT = 4;
+    int LEFT = 3;
 
-    String DELIMITER = "@@";
+
+
     // action types
+    String DELIMITER = "@@";
     String CONNECT = "CONNECT";
     String RECEIVE_ALL = "RECEIVE_ALL";
     String ADD_PLAYER = "ADD_PLAYER";
@@ -22,4 +24,12 @@ public interface Constants {
     String ADD_BULLET = "ADD_BULLET";
     String MOVE_BULLET = "MOVE_BULLET";
     String KILL_BULLET = "KILL_BULLET";
+
+    // Textures
+    String CHARACTER_UP = "character/CHARACTER_UP.png";
+    String CHARACTER_DOWN = "character/CHARACTER_DOWN.png";
+    String CHARACTER_RIGHT = "character/CHARACTER_RIGHT.png";
+    String CHARACTER_LEFT = "character/CHARACTER_LEFT.png";
+
+    String BULLET = "bullet/BULLET.png";
 }

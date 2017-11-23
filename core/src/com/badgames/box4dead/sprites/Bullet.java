@@ -1,5 +1,6 @@
 package com.badgames.box4dead.sprites;
 
+import com.badgames.box4dead.Assets;
 import com.badgames.box4dead.Constants;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
@@ -11,13 +12,12 @@ public class Bullet extends Sprite implements Constants {
     static final float SPEED = 500f;
     String id;
     int facing;
-    Texture texture = new Texture("bullet.png");
 
     public Bullet(float x, float y, int facing) {
         super();
         id = UUID.randomUUID().toString();
         this.facing = facing;
-        this.setTexture(texture);
+        this.setTexture(Assets.getManager().get(BULLET, Texture.class));
         this.setBounds(x, y, this.getTexture().getWidth(), this.getTexture().getHeight());
     }
 

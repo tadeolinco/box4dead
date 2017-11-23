@@ -3,6 +3,7 @@ package com.badgames.box4dead;
 import com.badgames.box4dead.sprites.Bullet;
 import com.badgames.box4dead.sprites.Character;
 import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.ObjectMap;
 
@@ -12,19 +13,19 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.Iterator;
 
-public class GameServer extends ApplicationAdapter implements Constants {
+public class GameServer extends Game implements Constants {
     private ObjectMap characters, players, bullets;
     private DatagramSocket socket;
     private DatagramPacket packet;
     private String data, action, payload;
     private String[] tokens;
+    private Assets assets;
 
-    @Override
-    public void create() {
-        super.create();
+    public GameServer() {
         characters = new ObjectMap();
         players = new ObjectMap();
         bullets = new ObjectMap();
+        assets = new Assets();
 
         try {
             socket = new DatagramSocket(PORT);
@@ -32,6 +33,13 @@ public class GameServer extends ApplicationAdapter implements Constants {
         } catch (SocketException e){
             e.printStackTrace();
         }
+    }
+
+
+    @Override
+    public void create() {
+        assets.load();
+        assets.getManager().finishLoading();
 
         new Thread(new Runnable() {
             @Override
@@ -100,15 +108,15 @@ public class GameServer extends ApplicationAdapter implements Constants {
                         });
                     }
 
-
+                    // expected payload: id x y facing
                     else if (action.equals(MOVE_PLAYER)) {
                         final String[] tokens = payload.split(" ");
                         Gdx.app.postRunnable(new Runnable() {
                             @Override
                             public void run() {
                                 Character character = (Character) characters.get(tokens[0]);
-                                character.move(Integer.parseInt(tokens[1]));
-                                broadcast(action(MOVE_PLAYER, payload(character.getId(), character.getX(), character.getY())));
+                                character.move(Float.parseFloat(tokens[1]), Float.parseFloat(tokens[2]), Integer.parseInt(tokens[3]));
+                                broadcast(action(MOVE_PLAYER, payload(character.getId(), character.getX(), character.getY(), character.getFacing())));
                             }
                         });
                     }
