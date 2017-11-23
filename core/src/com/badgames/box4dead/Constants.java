@@ -3,8 +3,8 @@ package com.badgames.box4dead;
 public interface Constants {
     int SOCKET_TIMEOUT = 50;
     int PORT = 9999;
-    int GAME_WIDTH = 800;
-    int GAME_HEIGHT = 600;
+    int GAME_WIDTH = 1024;
+    int GAME_HEIGHT = 728;
 
     int STILL = -1;
     int UP = 0;

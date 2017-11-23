@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" tiledversion="1.0.3" orientation="orthogonal" renderorder="right-down" width="32" height="26" tilewidth="32" tileheight="28" nextobjectid="1">
+ <tileset firstgid="1" name="game tiles" tilewidth="32" tileheight="28" tilecount="220" columns="20">
+  <image source="master-tileset.png" width="640" height="320"/>
+ </tileset>
+ <tileset firstgid="221" source="test.tsx"/>
+ <layer name="Tile Layer 1" width="32" height="26">
+  <data encoding="base64" compression="zlib">
+   eJztlj0OgCAMRqmLzk100SvrHfSk1qEJltaGRFhg+PIGftqXAAFCCAMFDO6UIyJSJhocISUq8619mTNl+eBJuSI+NTZavEJKVOZ7+1ueFnP9LUp/2bfFXH+Llr/m9Sc9f83rT3b/t788l7X8mdxPbX8mipT2l/VK+3os7euxdf/a50HWa/3+Q+Pvf/fv/7+W//83EVGUcQ==
+  </data>
+ </layer>
+</map>

@@ -8,6 +8,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.utils.ObjectMap;
 
 import java.io.IOException;
@@ -26,6 +30,8 @@ public class Box4Dead extends Game implements Constants {
 	DatagramSocket socket;
 	DatagramPacket packet;
 	String[] tokens;
+    TiledMap tiledMap;
+    TiledMapRenderer tiledMapRenderer;
 
     private ObjectMap characters;
     private ObjectMap bullets;
@@ -57,6 +63,8 @@ public class Box4Dead extends Game implements Constants {
 		batch = new SpriteBatch();
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, GAME_WIDTH, GAME_HEIGHT);
+        tiledMap = new TmxMapLoader().load("map/gameMap.tmx");
+        tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
 
 		new Thread(new Runnable() {
             @Override
@@ -199,7 +207,8 @@ public class Box4Dead extends Game implements Constants {
 	public void render () {
 		Gdx.gl.glClearColor(0, 0, 0.2f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
+        tiledMapRenderer.setView(camera);
+        tiledMapRenderer.render();
 		camera.update();
 		batch.setProjectionMatrix(camera.combined);
         update();
