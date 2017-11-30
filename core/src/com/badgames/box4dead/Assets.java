@@ -11,11 +11,6 @@ public class Assets implements Constants {
     }
 
     public void load() {
-        manager.load(CHARACTER_UP, Texture.class);
-        manager.load(CHARACTER_DOWN, Texture.class);
-        manager.load(CHARACTER_LEFT, Texture.class);
-        manager.load(CHARACTER_RIGHT, Texture.class);
-        manager.load(BULLET, Texture.class);
     }
 
     public static AssetManager getManager() {

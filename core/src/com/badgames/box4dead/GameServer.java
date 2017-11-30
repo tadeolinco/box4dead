@@ -13,8 +13,8 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.Iterator;
 
-public class GameServer extends Game implements Constants {
-    private ObjectMap characters, players, bullets;
+public class GameServer extends GameClient implements Constants {
+    private ObjectMap players;
     private DatagramSocket socket;
     private DatagramPacket packet;
     private String data, action, payload;
@@ -33,6 +33,7 @@ public class GameServer extends Game implements Constants {
         } catch (SocketException e){
             e.printStackTrace();
         }
+
     }
 
 
@@ -80,11 +81,11 @@ public class GameServer extends Game implements Constants {
                                 String allCharacters = "";
                                 for (Iterator ite = characters.values(); ite.hasNext();) {
                                     Character c = (Character) ite.next();
-                                    allCharacters += payload(c.getId(), c.getName());
+                                    allCharacters += payload(c.getId(), c.getName(), c.getColor().r, c.getColor().g, c.getColor().b);
                                 }
 
                                 // broadcast to every net player about that new character
-                                broadcast(action(ADD_PLAYER, payload(character.getId(), character.getName())));
+                                broadcast(action(ADD_PLAYER, payload(character.getId(), character.getName(), character.getColor().r, character.getColor().g, character.getColor().b)));
 
                                 // send to only the new player
                                 send(player, action(RECEIVE_ALL, allCharacters));
@@ -92,18 +93,19 @@ public class GameServer extends Game implements Constants {
                         });
                     }
 
-                    // expected payload: x y hDirection vDirection
+                    // expected payload: character_id x y facing
                     else if (action.equals(ADD_BULLET)) {
                         final String[] tokens = payload.split(" ");
-                        final float x = Float.parseFloat(tokens[0]);
-                        final float y = Float.parseFloat(tokens[1]);
-                        final int facing = RIGHT;
+                        final Character character = (Character) characters.get(tokens[0]);
+                        final float x = Float.parseFloat(tokens[1]);
+                        final float y = Float.parseFloat(tokens[2]);
+                        final int facing = Integer.parseInt(tokens[3]);
                         Gdx.app.postRunnable(new Runnable() {
                             @Override
                             public void run() {
-                                Bullet bullet = new Bullet(x, y, facing);
+                                Bullet bullet = new Bullet(tokens[0], x, y, facing, character.getColor());
                                 bullets.put(bullet.getId(), bullet);
-                                broadcast(action(ADD_BULLET, payload(bullet.getId(), x, y, facing)));
+                                broadcast(action(ADD_BULLET, payload(bullet.getId(), tokens[0], x, y, facing)));
                             }
                         });
                     }
@@ -123,13 +125,19 @@ public class GameServer extends Game implements Constants {
                 }
             }
         }).start();
+
     }
 
     public void update() {
         for (Iterator ite = bullets.values(); ite.hasNext();) {
             Bullet bullet = (Bullet) ite.next();
             bullet.move();
-            if (bullet.isOutOfWorld()) {
+            String characterId = bullet.hit();
+            if (!characterId.equals("")) {
+                bullets.remove(bullet.getId());
+                broadcast(action(KILL_BULLET, payload(bullet.getId())));
+            }
+            else if (bullet.isOutOfWorld()) {
                 bullets.remove(bullet.getId());
                 broadcast(action(KILL_BULLET, payload(bullet.getId())));
             } else {

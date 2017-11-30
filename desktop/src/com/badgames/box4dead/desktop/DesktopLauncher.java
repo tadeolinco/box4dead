@@ -12,8 +12,8 @@ public class DesktopLauncher {
 		if (type.equals("client")) {
 			String server = arg[1];
 			String name = arg[2];
-			config.width = 800;
-			config.height = 600;
+			config.width = 1024;
+			config.height = 728;
 			new LwjglApplication(new Box4Dead(server, name), config);
 		} else {
             config.width = 50;

@@ -2,23 +2,29 @@ package com.badgames.box4dead.sprites;
 
 import com.badgames.box4dead.Assets;
 import com.badgames.box4dead.Constants;
+import com.badgames.box4dead.GameClient;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 
+import java.util.Iterator;
 import java.util.UUID;
 
 public class Bullet extends Sprite implements Constants {
-    static final float SPEED = 500f;
-    String id;
+    public static final float SPEED = 500f;
+    public static final float WIDTH = 10;
+    public static final float HEIGHT = 10;
+    String id, characterId  ;
     int facing;
 
-    public Bullet(float x, float y, int facing) {
+    public Bullet(String characterId, float x, float y, int facing, Color color) {
         super();
         id = UUID.randomUUID().toString();
         this.facing = facing;
-        this.setTexture(Assets.getManager().get(BULLET, Texture.class));
-        this.setBounds(x, y, this.getTexture().getWidth(), this.getTexture().getHeight());
+        this.characterId = characterId;
+        this.setBounds(x, y, WIDTH, HEIGHT);
+        setColor(color);
     }
 
     public void move() {
@@ -53,6 +59,17 @@ public class Bullet extends Sprite implements Constants {
 
         return false;
     }
+
+    public String hit() {
+        for (Iterator ite = GameClient.characters.values(); ite.hasNext(); ) {
+            Character character = (Character) ite.next();
+            if (!characterId.equals(character.getId()) && getBoundingRectangle().overlaps(character.getBoundingRectangle())) {
+                return character.getId();
+            }
+        }
+        return "";
+    }
+
 
     public String getId() {
         return id;

@@ -8,6 +8,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
@@ -23,7 +24,7 @@ import java.util.Iterator;
 import java.util.UUID;
 
 
-public class Box4Dead extends Game implements Constants {
+public class Box4Dead extends GameClient implements Constants {
 	SpriteBatch batch;
 	String server, name, data, action, payload, id;
 	boolean connected;
@@ -32,9 +33,8 @@ public class Box4Dead extends Game implements Constants {
 	String[] tokens;
     TiledMap tiledMap;
     TiledMapRenderer tiledMapRenderer;
+    ShapeRenderer shapeRenderer;
 
-    private ObjectMap characters;
-    private ObjectMap bullets;
     private Assets assets;
     private OrthographicCamera camera;
 
@@ -65,6 +65,7 @@ public class Box4Dead extends Game implements Constants {
 		camera.setToOrtho(false, GAME_WIDTH, GAME_HEIGHT);
         tiledMap = new TmxMapLoader().load("map/gameMap.tmx");
         tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
+        shapeRenderer = new ShapeRenderer();
 
 		new Thread(new Runnable() {
             @Override
@@ -93,28 +94,35 @@ public class Box4Dead extends Game implements Constants {
                     action = tokens[0];
                     payload = tokens[1];
 
-                    // expected payload (id name )++
+                    // expected payload (id name red green blue)++
                     if (action.equals(RECEIVE_ALL)) {
+                        final int tokenSize = 5;
                         final String[] tokens = payload.split(" ");
                         Gdx.app.postRunnable(new Runnable() {
                             @Override
                             public void run() {
-                                for (int i = 0; i < tokens.length / 2; ++i) {
-                                    Character character = new Character(tokens[2 * i + 1]);
-                                    character.setId(tokens[2 * i + 0]);
+                                for (int i = 0; i < tokens.length / tokenSize; ++i) {
+                                    float red = Float.parseFloat(tokens[tokenSize * i + 2]);
+                                    float green = Float.parseFloat(tokens[tokenSize * i + 3]);
+                                    float blue = Float.parseFloat(tokens[tokenSize * i + 4]);
+                                    Character character = new Character(tokens[tokenSize * i + 1], red, green, blue);
+                                    character.setId(tokens[tokenSize * i]);
                                     characters.put(character.getId(), character);
                                 }
                             }
                         });
                     }
 
-                    // expected payload: id name
+                    // expected payload: id name red green blue
                     if (action.equals(ADD_PLAYER)) {
                         final String[] tokens = payload.split(" ");
                         Gdx.app.postRunnable(new Runnable() {
                             @Override
                             public void run() {
-                                Character character = new Character(tokens[1]);
+                                float red = Float.parseFloat(tokens[2]);
+                                float green = Float.parseFloat(tokens[3]);
+                                float blue = Float.parseFloat(tokens[4]);
+                                Character character = new Character(tokens[1], red, green, blue);
                                 character.setId(tokens[0]);
                                 characters.put(character.getId(), character);
                             }
@@ -135,16 +143,17 @@ public class Box4Dead extends Game implements Constants {
                         });
                     }
 
-                    // expected payload: id x y facing
+                    // expected payload: id character_id x y facing
                     if (action.equals(ADD_BULLET)) {
                         final String[] tokens = payload.split(" ");
-                        final float x = Float.parseFloat(tokens[1]);
-                        final float y = Float.parseFloat(tokens[2]);
-                        final int facing = Integer.parseInt(tokens[3]);
+                        final Character  character = (Character) characters.get(tokens[1]);
+                        final float x = Float.parseFloat(tokens[2]);
+                        final float y = Float.parseFloat(tokens[3]);
+                        final int facing = Integer.parseInt(tokens[4]);
                         Gdx.app.postRunnable(new Runnable() {
                             @Override
                             public void run() {
-                                Bullet bullet = new Bullet(x, y, facing);
+                                Bullet bullet = new Bullet(tokens[1], x, y, facing, character.getColor());
                                 bullet.setId(tokens[0]);
                                 bullets.put(bullet.getId(), bullet);
                             }
@@ -198,7 +207,9 @@ public class Box4Dead extends Game implements Constants {
                 send(action(MOVE_PLAYER, payload(character.getId(), character.getX(), character.getY(), character.getFacing())));
             }
             if (character.handleShoot()) {
-                send(action(ADD_BULLET, payload(character.getX(), character.getY())));
+                float x = character.getX() + Character.WIDTH / 2 - Bullet.WIDTH / 2;
+                float y = character.getY() + Character.HEIGHT / 2 - Bullet.HEIGHT / 2;
+                send(action(ADD_BULLET, payload(character.getId(), x, y, character.getFacing())));
             }
         }
     }
@@ -213,16 +224,23 @@ public class Box4Dead extends Game implements Constants {
 		batch.setProjectionMatrix(camera.combined);
         update();
 
-        batch.begin();
+        shapeRenderer.setProjectionMatrix(camera.combined);
         for (Iterator ite = characters.values(); ite.hasNext();) {
             Character character = (Character) ite.next();
-            batch.draw(character.getTexture(), character.getX(), character.getY());
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.setColor(character.getColor());
+            shapeRenderer.rect(character.getX(), character.getY(), character.getWidth(), character.getHeight());
+            shapeRenderer.end();
         }
+
+
         for (Iterator ite = bullets.values(); ite.hasNext();) {
             Bullet bullet = (Bullet) ite.next();
-            batch.draw(bullet.getTexture(), bullet.getX(), bullet.getY());
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.setColor(bullet.getColor());
+            shapeRenderer.rect(bullet.getX(), bullet.getY(), bullet.getWidth(), bullet.getHeight());
+            shapeRenderer.end();
         }
-        batch.end();
 	}
 	
 	@Override

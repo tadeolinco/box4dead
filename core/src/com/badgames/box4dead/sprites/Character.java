@@ -2,29 +2,43 @@ package com.badgames.box4dead.sprites;
 
 import com.badgames.box4dead.Assets;
 import com.badgames.box4dead.Constants;
+import com.badgames.box4dead.GameClient;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 
+import java.util.Iterator;
 import java.util.UUID;
 
 public class Character extends Sprite implements Constants {
 
 
     public static float SPEED = 400f;
+    public static int WIDTH = 75;
+    public static int HEIGHT = 75;
 
     private String id, name;
     private int facing = DOWN;
-    String texture;
 
+
+    public Character(String name, float red, float green, float blue) {
+        super();
+        this.name = name;
+        this.id = UUID.randomUUID().toString();
+        this.setBounds(getX(), getY(), WIDTH, HEIGHT);
+        setColor(new Color(red, green, blue, 1));
+        setX((float) Math.random() * GAME_WIDTH);
+    }
 
     public Character(String name) {
         super();
         this.name = name;
         this.id = UUID.randomUUID().toString();
-        this.setTexture(Assets.getManager().get(CHARACTER_DOWN, Texture.class));
-        this.setBounds(0, 0, this.getTexture().getWidth(), this.getTexture().getHeight());
+        this.setBounds(getX(), getY(), WIDTH, HEIGHT);
+        setColor(new Color((float) Math.random(), (float) Math.random(), (float) Math.random(), 1));
+        setX((float) Math.random() * GAME_WIDTH);
     }
 
     public boolean handleMove() {
@@ -61,32 +75,43 @@ public class Character extends Sprite implements Constants {
     }
 
     public void move(float x, float y, int facing) {
+        this.facing = facing;
+        float prevX = getX();
+        float prevY = getY();
+
+
         this.setX(x);
         this.setY(y);
+
+        boolean isOverlapping = false;
+        for (Iterator ite = GameClient.characters.values(); ite.hasNext();) {
+            Character character = (Character) ite.next();
+            if (!id.equals(character.getId()) && getBoundingRectangle().overlaps(character.getBoundingRectangle())) {
+                isOverlapping = true;
+                break;
+            }
+        }
+
+        if (isOverlapping) {
+            setX(prevX);
+            setY(prevY);
+            return;
+        }
 
         // make sure that character won't go outside the game world
         if (x + this.getWidth() > GAME_WIDTH)
             this.setX(GAME_WIDTH - this.getWidth());
-        if (y + this.getHeight() > GAME_HEIGHT)
+        else if (y + this.getHeight() > GAME_HEIGHT)
             this.setY(GAME_HEIGHT - this.getHeight());
-        if (x < 0)
+        else if (x < 0)
             this.setX(0);
-        if (y < 0)
+        else if (y < 0)
             this.setY(0);
-
-        // only change texture and bounds if needed
-        if (this.facing != facing) {
-            this.facing = facing;
-            texture = "";
-            switch (facing) {
-                case UP: texture = CHARACTER_UP; break;
-                case DOWN: texture = CHARACTER_DOWN; break;
-                case RIGHT: texture = CHARACTER_RIGHT; break;
-                case LEFT: texture = CHARACTER_LEFT; break;
-            }
-            this.setTexture(Assets.getManager().get(texture, Texture.class));
-            this.setBounds(this.getX(), this.getY(), this.getTexture().getWidth(), this.getTexture().getHeight());
+        else {
+            this.setX(x);
+            this.setY(y);
         }
+
     }
 
 
@@ -119,4 +144,5 @@ public class Character extends Sprite implements Constants {
     public void setFacing(int facing) {
         this.facing = facing;
     }
+
 }
