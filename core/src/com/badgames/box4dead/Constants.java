@@ -20,16 +20,16 @@ public interface Constants {
     String RECEIVE_ALL = "RECEIVE_ALL";
     String ADD_PLAYER = "ADD_PLAYER";
     String MOVE_PLAYER = "MOVE_PLAYER";
+    String CHANGE_HP_PLAYER = "CHANGE_HP_PLAYER";
 
     String ADD_BULLET = "ADD_BULLET";
     String MOVE_BULLET = "MOVE_BULLET";
     String KILL_BULLET = "KILL_BULLET";
 
-    // Textures
-    String CHARACTER_UP = "character/CHARACTER_UP.png";
-    String CHARACTER_DOWN = "character/CHARACTER_DOWN.png";
-    String CHARACTER_RIGHT = "character/CHARACTER_RIGHT.png";
-    String CHARACTER_LEFT = "character/CHARACTER_LEFT.png";
+    String ADD_ZOMBIE = "ADD_ZOMBIE";
+    String MOVE_ZOMBIE = "MOVE_ZOMBIE";
+    String KILL_ZOMBIE = "KILL_ZOMBIE";
+    String CHANGE_HP_ZOMBIE = "CHANGE_HP_ZOMBIE";
 
-    String BULLET = "bullet/BULLET.png";
+
 }

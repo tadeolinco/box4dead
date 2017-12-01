@@ -12,11 +12,13 @@ import java.util.Iterator;
 import java.util.UUID;
 
 public class Bullet extends Sprite implements Constants {
-    public static final float SPEED = 500f;
+    public static final float SPEED = 1000f;
     public static final float WIDTH = 10;
     public static final float HEIGHT = 10;
     String id, characterId  ;
     int facing;
+    float damage = 10f;
+
 
     public Bullet(String characterId, float x, float y, int facing, Color color) {
         super();
@@ -60,7 +62,7 @@ public class Bullet extends Sprite implements Constants {
         return false;
     }
 
-    public String hit() {
+    public String hitCharacter() {
         for (Iterator ite = GameClient.characters.values(); ite.hasNext(); ) {
             Character character = (Character) ite.next();
             if (!characterId.equals(character.getId()) && getBoundingRectangle().overlaps(character.getBoundingRectangle())) {
@@ -69,6 +71,17 @@ public class Bullet extends Sprite implements Constants {
         }
         return "";
     }
+
+    public String hitZombie() {
+        for (Iterator ite = GameClient.zombies.values(); ite.hasNext(); ) {
+            Zombie zombie = (Zombie) ite.next();
+            if (getBoundingRectangle().overlaps(zombie.getBoundingRectangle())) {
+                return zombie.getId();
+            }
+        }
+        return "";
+    }
+
 
 
     public String getId() {
@@ -85,5 +98,13 @@ public class Bullet extends Sprite implements Constants {
 
     public void setFacing(int facing) {
         this.facing = facing;
+    }
+
+    public float getDamage() {
+        return damage;
+    }
+
+    public void setDamage(float damage) {
+        this.damage = damage;
     }
 }

@@ -18,28 +18,46 @@ public class Character extends Sprite implements Constants {
     public static float SPEED = 400f;
     public static int WIDTH = 75;
     public static int HEIGHT = 75;
+    public static float MAX_HP = 100f;
+    public static float REGEN_RATE = 0.5f;
 
     private String id, name;
     private int facing = DOWN;
+    private float hp = MAX_HP;
+    private float regenCounter = 0;
 
 
-    public Character(String name, float red, float green, float blue) {
+    public Character(String name, float x, float y, float red, float green, float blue) {
         super();
         this.name = name;
         this.id = UUID.randomUUID().toString();
         this.setBounds(getX(), getY(), WIDTH, HEIGHT);
         setColor(new Color(red, green, blue, 1));
-        setX((float) Math.random() * GAME_WIDTH);
+        setX(x);
+        setY(y);
     }
 
     public Character(String name) {
         super();
         this.name = name;
         this.id = UUID.randomUUID().toString();
+        setX((float) Math.random() * GAME_WIDTH);
+        setY((float) Math.random() * GAME_HEIGHT);
         this.setBounds(getX(), getY(), WIDTH, HEIGHT);
         setColor(new Color((float) Math.random(), (float) Math.random(), (float) Math.random(), 1));
-        setX((float) Math.random() * GAME_WIDTH);
     }
+
+    public boolean handleRegen() {
+        if (this.hp < MAX_HP) {
+            regenCounter += Gdx.graphics.getDeltaTime();
+            if (regenCounter > REGEN_RATE) {
+                regenCounter = regenCounter % REGEN_RATE;
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     public boolean handleMove() {
         float dt = Gdx.graphics.getDeltaTime();
@@ -89,6 +107,15 @@ public class Character extends Sprite implements Constants {
             if (!id.equals(character.getId()) && getBoundingRectangle().overlaps(character.getBoundingRectangle())) {
                 isOverlapping = true;
                 break;
+            }
+        }
+        if (!isOverlapping) {
+            for (Iterator ite = GameClient.zombies.values(); ite.hasNext(); ) {
+                Zombie zombie = (Zombie) ite.next();
+                if (getBoundingRectangle().overlaps(zombie.getBoundingRectangle())) {
+                    isOverlapping = true;
+                    break;
+                }
             }
         }
 
@@ -145,4 +172,11 @@ public class Character extends Sprite implements Constants {
         this.facing = facing;
     }
 
+    public float getHp() {
+        return hp;
+    }
+
+    public void setHp(float hp) {
+        this.hp = Math.max(0, Math.min(MAX_HP, hp));
+    }
 }

@@ -2,8 +2,7 @@ package com.badgames.box4dead;
 
 import com.badgames.box4dead.sprites.Bullet;
 import com.badgames.box4dead.sprites.Character;
-import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.Game;
+import com.badgames.box4dead.sprites.Zombie;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.ObjectMap;
 
@@ -21,10 +20,13 @@ public class GameServer extends GameClient implements Constants {
     private String[] tokens;
     private Assets assets;
 
+    private float zombieTimer = 0f;
+
     public GameServer() {
         characters = new ObjectMap();
         players = new ObjectMap();
         bullets = new ObjectMap();
+        zombies = new ObjectMap();
         assets = new Assets();
 
         try {
@@ -81,11 +83,11 @@ public class GameServer extends GameClient implements Constants {
                                 String allCharacters = "";
                                 for (Iterator ite = characters.values(); ite.hasNext();) {
                                     Character c = (Character) ite.next();
-                                    allCharacters += payload(c.getId(), c.getName(), c.getColor().r, c.getColor().g, c.getColor().b);
+                                    allCharacters += payload(c.getId(), c.getName(), c.getX(), c.getY(), c.getColor().r, c.getColor().g, c.getColor().b);
                                 }
 
                                 // broadcast to every net player about that new character
-                                broadcast(action(ADD_PLAYER, payload(character.getId(), character.getName(), character.getColor().r, character.getColor().g, character.getColor().b)));
+                                broadcast(action(ADD_PLAYER, payload(character.getId(), character.getName(), character.getX(), character.getY(), character.getColor().r, character.getColor().g, character.getColor().b)));
 
                                 // send to only the new player
                                 send(player, action(RECEIVE_ALL, allCharacters));
@@ -122,6 +124,19 @@ public class GameServer extends GameClient implements Constants {
                             }
                         });
                     }
+
+                    // expected payload: id hp
+                    else if (action.equals(MOVE_PLAYER)) {
+                        final String[] tokens = payload.split(" ");
+                        Gdx.app.postRunnable(new Runnable() {
+                            @Override
+                            public void run() {
+                                Character character = (Character) characters.get(tokens[0]);
+                                character.move(Float.parseFloat(tokens[1]), Float.parseFloat(tokens[2]), Integer.parseInt(tokens[3]));
+                                broadcast(action(MOVE_PLAYER, payload(character.getId(), character.getX(), character.getY(), character.getFacing())));
+                            }
+                        });
+                    }
                 }
             }
         }).start();
@@ -129,19 +144,69 @@ public class GameServer extends GameClient implements Constants {
     }
 
     public void update() {
+
         for (Iterator ite = bullets.values(); ite.hasNext();) {
             Bullet bullet = (Bullet) ite.next();
             bullet.move();
-            String characterId = bullet.hit();
+            String characterId = bullet.hitCharacter();
             if (!characterId.equals("")) {
                 bullets.remove(bullet.getId());
                 broadcast(action(KILL_BULLET, payload(bullet.getId())));
+                Character character = (Character) characters.get(characterId);
+                character.setHp(character.getHp() - bullet.getDamage());
+                broadcast(action(CHANGE_HP_PLAYER, payload(characterId, character.getHp())));
+                continue;
             }
-            else if (bullet.isOutOfWorld()) {
+            String zombieId = bullet.hitZombie();
+            if (!zombieId.equals("")) {
+                bullets.remove(bullet.getId());
+                broadcast(action(KILL_BULLET, payload(bullet.getId())));
+                Zombie zombie = (Zombie) zombies.get(zombieId);
+                zombie.setHp(zombie.getHp() - bullet.getDamage());
+                if (zombie.getHp() < 0) {
+                    zombies.remove(zombie.getId());
+                    broadcast(action(KILL_ZOMBIE, payload(zombie.getId())));
+                } else {
+                    broadcast(action(CHANGE_HP_ZOMBIE, payload(zombie.getId(), zombie.getHp())));
+                    zombie.setStunDuration(0.5f);
+                }
+            }
+
+
+            if (bullet.isOutOfWorld()) {
                 bullets.remove(bullet.getId());
                 broadcast(action(KILL_BULLET, payload(bullet.getId())));
             } else {
                 broadcast(action(MOVE_BULLET, payload(bullet.getId(), bullet.getX(), bullet.getY())));
+            }
+        }
+
+        for (Iterator ite = characters.values(); ite.hasNext(); ) {
+            Character character = (Character) ite.next();
+            if (character.handleRegen()) {
+                float hp = 1;
+                character.setHp(character.getHp() + hp);
+                broadcast(action(CHANGE_HP_PLAYER, payload(character.getId(), character.getHp())));
+            }
+        }
+
+
+        zombieTimer += Gdx.graphics.getDeltaTime();
+        if (zombieTimer > 10) {
+            Zombie zombie = new Zombie();
+            zombies.put(zombie.getId(), zombie);
+            broadcast(action(ADD_ZOMBIE, payload(zombie.getId(), zombie.getX(), zombie.getY())));
+            zombieTimer = zombieTimer % 10;
+        }
+        for (Iterator ite = zombies.values(); ite.hasNext(); ) {
+            Zombie zombie = (Zombie) ite.next();
+            zombie.move();
+            broadcast(action(MOVE_ZOMBIE, payload(zombie.getId(), zombie.getX(), zombie.getY())));
+            String characterId = zombie.handleAttack();
+            if (!characterId.equals("")) {;
+                Character character = (Character) characters.get(characterId);
+                character.setHp(character.getHp() - zombie.getDamage());
+                broadcast(action(CHANGE_HP_PLAYER, payload(character.getId(), character.getHp())));
             }
         }
     }
