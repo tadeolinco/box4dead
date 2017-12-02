@@ -14,27 +14,24 @@ public class Zombie extends Sprite implements Constants {
     public static float SPEED = 50f;
     public static int WIDTH = 75;
     public static int HEIGHT = 75;
-    public static float MAX_HP = 100f;
+    public static float MAX_HP = 50f;
 
     private float damage = 10f;
     private float attackTimer = 0f;
-    private float stunDuration = 0;
 
     private String id;
-    private float hp = 100;
+    private float hp = MAX_HP;
 
     public Zombie() {
         this.id = UUID.randomUUID().toString();
         setX((float) Math.random() * GAME_WIDTH);
         setY((float) Math.random() * GAME_HEIGHT);
         this.setBounds(getX(), getY(), WIDTH, HEIGHT);
-        setColor(Color.GRAY);
+        setColor(new Color(0.5f, 0.5f, 0.5f, 1));
     }
 
 
     public void move() {
-        stunDuration -= Gdx.graphics.getDeltaTime();
-        if (stunDuration > 0) return;
         float prevX = getX();
         double minDistance = Double.POSITIVE_INFINITY;
         float characterX = 0, characterY = 0, dx = 0, dy = 0;
@@ -124,6 +121,51 @@ public class Zombie extends Sprite implements Constants {
         return characterId;
     }
 
+    public boolean handleKnockBack(int bulletFacing, float force) {
+        float prevX = getX();
+        float prevY = getY();
+
+        if (bulletFacing == RIGHT) {
+            setX(getX() + force);
+        }
+        if (bulletFacing == LEFT) {
+            setX(getX() - force);
+        }
+        if (bulletFacing == UP) {
+            setY(getY() + force);
+        }
+        if (bulletFacing == DOWN) {
+            setY(getY() - force);
+        }
+
+        boolean overlapping = false;
+        for (Iterator ite = GameClient.zombies.values(); ite.hasNext(); ) {
+            Zombie zombie = (Zombie) ite.next();
+            if (!id.equals(zombie.getId()) && getBoundingRectangle().overlaps(zombie.getBoundingRectangle())) {
+                overlapping = true;
+                break;
+            }
+        }
+
+        if (!overlapping) {
+            for (Iterator ite = GameClient.characters.values(); ite.hasNext(); ) {
+                Character character = (Character) ite.next();
+                if (getBoundingRectangle().overlaps(character.getBoundingRectangle())) {
+                    overlapping = true;
+                    break;
+                }
+            }
+        }
+
+        if (overlapping) {
+            setX(prevX);
+            setY(prevY);
+            return false;
+        }
+        return true;
+    }
+
+
     public String getId() {
         return id;
     }
@@ -138,6 +180,18 @@ public class Zombie extends Sprite implements Constants {
 
     public void setHp(float hp) {
         this.hp = hp;
+        if (hp < 10) {
+            setColor(0.3f, 0.3f, 0.3f, 1);
+        }
+        else if (hp < 20) {
+            setColor(0.35f, 0.35f, 0.35f, 1);
+        }
+        else if (hp < 30) {
+            setColor(0.4f, 0.4f, 0.4f, 1);
+        }
+        else if (hp < 40) {
+            setColor(0.45f, 0.45f, 0.45f, 1);
+        }
     }
 
     public float getDamage() {
@@ -148,7 +202,4 @@ public class Zombie extends Sprite implements Constants {
         this.damage = damage;
     }
 
-    public void setStunDuration(float stunDuration) {
-        this.stunDuration = stunDuration;
-    }
 }

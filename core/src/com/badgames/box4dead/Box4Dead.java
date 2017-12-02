@@ -1,10 +1,10 @@
 package com.badgames.box4dead;
 
+import com.badgames.box4dead.effects.Effect;
+import com.badgames.box4dead.effects.DeathEffect;
 import com.badgames.box4dead.sprites.Bullet;
 import com.badgames.box4dead.sprites.Character;
 import com.badgames.box4dead.sprites.Zombie;
-import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -15,6 +15,7 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 
 import java.io.IOException;
@@ -39,6 +40,7 @@ public class Box4Dead extends GameClient implements Constants {
 
     private Assets assets;
     private OrthographicCamera camera;
+    private Array<Effect> effects;
 
 
 	public Box4Dead(String server, String name) {
@@ -56,6 +58,7 @@ public class Box4Dead extends GameClient implements Constants {
         bullets = new ObjectMap();
         zombies = new ObjectMap();
         assets = new Assets();
+        effects = new Array<Effect>();
 	}
 
 
@@ -239,6 +242,8 @@ public class Box4Dead extends GameClient implements Constants {
                         Gdx.app.postRunnable(new Runnable() {
                             @Override
                             public void run() {
+                                Zombie zombie = (Zombie) zombies.get(tokens[0]);
+                                effects.add(new DeathEffect(zombie.getX(), zombie.getY(), zombie.getColor()));
                                 zombies.remove(tokens[0]);
                             }
                         });
@@ -282,6 +287,14 @@ public class Box4Dead extends GameClient implements Constants {
                 send(action(ADD_BULLET, payload(character.getId(), x, y, character.getFacing())));
             }
         }
+
+        for (Iterator ite = effects.iterator(); ite.hasNext(); ) {
+            Effect effect = (Effect) ite.next();
+            effect.update();
+            if (effect.getTimer() < 0) {
+                effects.removeValue(effect, false);
+            }
+        }
     }
 
 	@Override
@@ -295,6 +308,13 @@ public class Box4Dead extends GameClient implements Constants {
         update();
 
         shapeRenderer.setProjectionMatrix(camera.combined);
+
+
+        for (Iterator ite = effects.iterator(); ite.hasNext(); ) {
+            Effect effect = (Effect) ite.next();
+            effect.draw(shapeRenderer);
+        }
+
 
         for (Iterator ite = zombies.values(); ite.hasNext(); ) {
             Zombie zombie = (Zombie) ite.next();
@@ -330,6 +350,7 @@ public class Box4Dead extends GameClient implements Constants {
             shapeRenderer.rect(bullet.getX(), bullet.getY(), bullet.getWidth(), bullet.getHeight());
             shapeRenderer.end();
         }
+
 	}
 	
 	@Override

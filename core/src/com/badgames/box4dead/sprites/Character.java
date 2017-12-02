@@ -32,7 +32,7 @@ public class Character extends Sprite implements Constants {
         this.name = name;
         this.id = UUID.randomUUID().toString();
         this.setBounds(getX(), getY(), WIDTH, HEIGHT);
-        setColor(new Color(red, green, blue, 1));
+        setColor(new Color(0, green, blue, 1));
         setX(x);
         setY(y);
     }

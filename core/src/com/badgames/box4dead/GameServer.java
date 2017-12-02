@@ -21,6 +21,7 @@ public class GameServer extends GameClient implements Constants {
     private Assets assets;
 
     private float zombieTimer = 0f;
+    private float zombieSpawnRate = 10f;
 
     public GameServer() {
         characters = new ObjectMap();
@@ -147,8 +148,12 @@ public class GameServer extends GameClient implements Constants {
 
         for (Iterator ite = bullets.values(); ite.hasNext();) {
             Bullet bullet = (Bullet) ite.next();
+            // move the bullet
             bullet.move();
+
+            // check if bullet hit a character
             String characterId = bullet.hitCharacter();
+            // if the bullet actually hit a character
             if (!characterId.equals("")) {
                 bullets.remove(bullet.getId());
                 broadcast(action(KILL_BULLET, payload(bullet.getId())));
@@ -157,22 +162,26 @@ public class GameServer extends GameClient implements Constants {
                 broadcast(action(CHANGE_HP_PLAYER, payload(characterId, character.getHp())));
                 continue;
             }
+
+            // check if bullet hit a zombie
             String zombieId = bullet.hitZombie();
             if (!zombieId.equals("")) {
-                bullets.remove(bullet.getId());
-                broadcast(action(KILL_BULLET, payload(bullet.getId())));
                 Zombie zombie = (Zombie) zombies.get(zombieId);
                 zombie.setHp(zombie.getHp() - bullet.getDamage());
                 if (zombie.getHp() < 0) {
                     zombies.remove(zombie.getId());
                     broadcast(action(KILL_ZOMBIE, payload(zombie.getId())));
                 } else {
+                    if (zombie.handleKnockBack(bullet.getFacing(), 15)) {
+                        broadcast(action(MOVE_ZOMBIE, payload(zombie.getId(), zombie.getX(), zombie.getY())));
+                    }
                     broadcast(action(CHANGE_HP_ZOMBIE, payload(zombie.getId(), zombie.getHp())));
-                    zombie.setStunDuration(0.5f);
                 }
+                bullets.remove(bullet.getId());
+                broadcast(action(KILL_BULLET, payload(bullet.getId())));
             }
 
-
+            // check if bullet is out of the world
             if (bullet.isOutOfWorld()) {
                 bullets.remove(bullet.getId());
                 broadcast(action(KILL_BULLET, payload(bullet.getId())));
@@ -192,18 +201,18 @@ public class GameServer extends GameClient implements Constants {
 
 
         zombieTimer += Gdx.graphics.getDeltaTime();
-        if (zombieTimer > 10) {
+        if (zombieTimer > zombieSpawnRate) {
             Zombie zombie = new Zombie();
             zombies.put(zombie.getId(), zombie);
             broadcast(action(ADD_ZOMBIE, payload(zombie.getId(), zombie.getX(), zombie.getY())));
-            zombieTimer = zombieTimer % 10;
+            zombieTimer = zombieTimer % zombieSpawnRate;
         }
         for (Iterator ite = zombies.values(); ite.hasNext(); ) {
             Zombie zombie = (Zombie) ite.next();
             zombie.move();
             broadcast(action(MOVE_ZOMBIE, payload(zombie.getId(), zombie.getX(), zombie.getY())));
             String characterId = zombie.handleAttack();
-            if (!characterId.equals("")) {;
+            if (!characterId.equals("")) {
                 Character character = (Character) characters.get(characterId);
                 character.setHp(character.getHp() - zombie.getDamage());
                 broadcast(action(CHANGE_HP_PLAYER, payload(character.getId(), character.getHp())));
@@ -220,14 +229,6 @@ public class GameServer extends GameClient implements Constants {
     @Override
     public void dispose() {
         super.dispose();
-        for (Iterator ite = characters.values(); ite.hasNext();) {
-            Character character = (Character) ite.next();
-            character.getTexture().dispose();
-        }
-        for (Iterator ite = bullets.values(); ite.hasNext();) {
-            Bullet bullet = (Bullet) ite.next();
-            bullet.getTexture().dispose();
-        }
     }
 
     public void broadcast(String msg){
