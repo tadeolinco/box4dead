@@ -111,7 +111,7 @@ public class Character extends Sprite implements Constants {
 
         for (Iterator ite = GameClient.characters.values(); ite.hasNext();) {
             Character character = (Character) ite.next();
-            if (!id.equals(character.getId()) && getBoundingRectangle().overlaps(character.getBoundingRectangle()) || wallCollision() ) {
+            if (!id.equals(character.getId()) && getBoundingRectangle().overlaps(character.getBoundingRectangle()) || wallCollision(character) ) {
                 isOverlapping = true;
                 break;
             }
@@ -150,12 +150,12 @@ public class Character extends Sprite implements Constants {
     }
 
 
-    public boolean wallCollision(){
+    public boolean wallCollision(Character character){
         MapLayer collisionObjectLayer = Box4Dead.tiledMap.getLayers().get("Object Layer 1");
         MapObjects objects = collisionObjectLayer.getObjects();
         for (RectangleMapObject rectangleObject : objects.getByType(RectangleMapObject.class)) {
             Rectangle rectangle = rectangleObject.getRectangle();
-            if (Intersector.overlaps(rectangle, getBoundingRectangle())) {
+            if (Intersector.overlaps(rectangle, character.getBoundingRectangle())) {
                 return true;
             }
         }

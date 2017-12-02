@@ -350,12 +350,7 @@ public class Box4Dead extends GameClient implements Constants {
             else shapeRenderer.setColor(Color.GREEN);
             shapeRenderer.rect(character.getX(), character.getY() + character.getHeight() + 10, hpPercent * character.getWidth(), 5f);
             shapeRenderer.end();
-
-
-
         }
-
-
 
         for (Iterator ite = bullets.values(); ite.hasNext();) {
             Bullet bullet = (Bullet) ite.next();
