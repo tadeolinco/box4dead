@@ -34,8 +34,9 @@ public class Box4Dead extends GameClient implements Constants {
 	DatagramSocket socket;
 	DatagramPacket packet;
 	String[] tokens;
-    TiledMap tiledMap;
+    public static TiledMap tiledMap;
     TiledMapRenderer tiledMapRenderer;
+//    TiledMapTileLayerz
     ShapeRenderer shapeRenderer;
 
     private Assets assets;
@@ -71,6 +72,7 @@ public class Box4Dead extends GameClient implements Constants {
 		camera.setToOrtho(false, GAME_WIDTH, GAME_HEIGHT);
         tiledMap = new TmxMapLoader().load("map/gameMap.tmx");
         tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
+
         shapeRenderer = new ShapeRenderer();
 
 		new Thread(new Runnable() {
@@ -99,7 +101,15 @@ public class Box4Dead extends GameClient implements Constants {
                     tokens = data.split(DELIMITER);
                     action = tokens[0];
                     payload = tokens[1];
-
+//                    MapObjects objects = Box4Dead.tiledMap.getLayers().get("Object Layer1").getObjects();
+//
+//                        for(MapObject obj : objects){
+//                            if(obj.getProperties().containsKey("blocked")){
+//                //                hasCollision = true;
+//                                System.out.println(obj.toString());
+//                                break;
+//                            }
+//                        }
                     // expected payload (id name x y red green blue)++
                     if (action.equals(RECEIVE_ALL)) {
                         final int tokenSize = 7;
@@ -301,8 +311,8 @@ public class Box4Dead extends GameClient implements Constants {
 	public void render () {
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-//        tiledMapRenderer.setView(camera);
-//        tiledMapRenderer.render();
+        tiledMapRenderer.setView(camera);
+        tiledMapRenderer.render();
 		camera.update();
 		batch.setProjectionMatrix(camera.combined);
         update();
@@ -329,6 +339,7 @@ public class Box4Dead extends GameClient implements Constants {
             Character character = (Character) ite.next();
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
             shapeRenderer.setColor(character.getColor());
+
             shapeRenderer.rect(character.getX(), character.getY(), character.getWidth(), character.getHeight());
             shapeRenderer.end();
 
@@ -339,6 +350,9 @@ public class Box4Dead extends GameClient implements Constants {
             else shapeRenderer.setColor(Color.GREEN);
             shapeRenderer.rect(character.getX(), character.getY() + character.getHeight() + 10, hpPercent * character.getWidth(), 5f);
             shapeRenderer.end();
+
+
+
         }
 
 

@@ -1,13 +1,18 @@
 package com.badgames.box4dead.sprites;
 
-import com.badgames.box4dead.Assets;
 import com.badgames.box4dead.Constants;
 import com.badgames.box4dead.GameClient;
+import com.badgames.box4dead.Box4Dead;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.maps.MapObjects;
+import com.badlogic.gdx.maps.objects.RectangleMapObject;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+import com.badlogic.gdx.math.Intersector;
+import com.badlogic.gdx.math.Rectangle;
 
 import java.util.Iterator;
 import java.util.UUID;
@@ -32,9 +37,9 @@ public class Character extends Sprite implements Constants {
         this.name = name;
         this.id = UUID.randomUUID().toString();
         this.setBounds(getX(), getY(), WIDTH, HEIGHT);
-        setColor(new Color(0, green, blue, 1));
-        setX(x);
-        setY(y);
+        setColor(new Color(red, green, blue, 1));
+        setX(500);
+        setY(500);
     }
 
     public Character(String name) {
@@ -102,13 +107,16 @@ public class Character extends Sprite implements Constants {
         this.setY(y);
 
         boolean isOverlapping = false;
+
+
         for (Iterator ite = GameClient.characters.values(); ite.hasNext();) {
             Character character = (Character) ite.next();
-            if (!id.equals(character.getId()) && getBoundingRectangle().overlaps(character.getBoundingRectangle())) {
+            if (!id.equals(character.getId()) && getBoundingRectangle().overlaps(character.getBoundingRectangle()) || wallCollision() ) {
                 isOverlapping = true;
                 break;
             }
         }
+
         if (!isOverlapping) {
             for (Iterator ite = GameClient.zombies.values(); ite.hasNext(); ) {
                 Zombie zombie = (Zombie) ite.next();
@@ -139,6 +147,19 @@ public class Character extends Sprite implements Constants {
             this.setY(y);
         }
 
+    }
+
+
+    public boolean wallCollision(){
+        MapLayer collisionObjectLayer = Box4Dead.tiledMap.getLayers().get("Object Layer 1");
+        MapObjects objects = collisionObjectLayer.getObjects();
+        for (RectangleMapObject rectangleObject : objects.getByType(RectangleMapObject.class)) {
+            Rectangle rectangle = rectangleObject.getRectangle();
+            if (Intersector.overlaps(rectangle, getBoundingRectangle())) {
+                return true;
+            }
+        }
+        return false;
     }
 
 
