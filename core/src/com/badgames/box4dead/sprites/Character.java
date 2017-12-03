@@ -31,14 +31,14 @@ public class Character extends Sprite implements Constants {
     private int score = 0;
 
 
-    public Character(String name, float x, float y, float red, float green, float blue) {
+    public Character(String name, float red, float green, float blue) {
         super();
         this.name = name;
         this.id = UUID.randomUUID().toString();
         this.setBounds(getX(), getY(), WIDTH, HEIGHT);
         setColor(new Color(red, green, blue, 1));
-        setX(500);
-        setY(500);
+        setX(GAME_WIDTH / 2 - WIDTH / 2);
+        setY(GAME_HEIGHT / 2 - HEIGHT / 2);
     }
 
     public Character(String name) {

@@ -18,7 +18,7 @@
  </layer>
  <layer name="Tile Layer 2" width="32" height="26">
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2AUjALiwGZGCCZWfLjZP9LARmCYbsIRruTKkQIOAs04hMMccuVGAflgoPPfQNs/CkbBKBg+AAAXchP/
+   eJxjYBgFo2AUjALiwGZGCCZWfLjZP9LARmCYbiIjXMnVhw4OAs04RIY55OobBfjBQOe/gbZ/FIyCUTB8AAAniREV
   </data>
  </layer>
  <objectgroup name="Object Layer 1">
@@ -65,7 +65,6 @@
   <object id="25" x="382" y="223" width="65" height="54"/>
   <object id="28" x="576.5" y="225.5" width="63" height="54.5"/>
   <object id="31" x="705.5" y="336.5" width="59" height="51.5"/>
-  <object id="32" x="480" y="336" width="62.5" height="53.5"/>
   <object id="33" x="578" y="449" width="61" height="52.5"/>
   <object id="34" x="386" y="449.75" width="63" height="53"/>
   <object id="35" x="257.5" y="337.25" width="62.5" height="53"/>

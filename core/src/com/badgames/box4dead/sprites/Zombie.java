@@ -7,13 +7,14 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Rectangle;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.UUID;
 
 public class Zombie extends Sprite implements Constants {
     public static float SPEED = 50f;
-    public static int WIDTH = 75;
-    public static int HEIGHT = 75;
+    public static int WIDTH = 60;
+    public static int HEIGHT = 60;
     public static float MAX_HP = 50f;
 
     private float damage = 10f;
@@ -24,14 +25,32 @@ public class Zombie extends Sprite implements Constants {
 
     public Zombie() {
         this.id = UUID.randomUUID().toString();
-        setX((float) Math.random() * GAME_WIDTH);
-        setY((float) Math.random() * GAME_HEIGHT);
-        this.setBounds(getX(), getY(), WIDTH, HEIGHT);
         setColor(new Color(0.5f, 0.5f, 0.5f, 1));
+        if (Math.random() < 0.5) {
+            setX((float) Math.floor(Math.random() * (GAME_WIDTH - WIDTH) - WIDTH));
+            if (getX() == -WIDTH || getX() == GAME_WIDTH) {
+                setY((float) Math.floor(Math.random() * (GAME_HEIGHT - HEIGHT) - HEIGHT));
+            } else {
+                if (Math.random() < 0.5) setY(-HEIGHT);
+                else setY(GAME_HEIGHT);
+            }
+        } else {
+            setY((float) Math.floor(Math.random() * (GAME_HEIGHT - HEIGHT) - HEIGHT));
+            if (getY() == -HEIGHT || getY() == GAME_HEIGHT) {
+                setX((float) Math.floor(Math.random() * (GAME_WIDTH - WIDTH) - WIDTH));
+            } else {
+                if (Math.random() < 0.5) setX(-WIDTH);
+                else setX(GAME_WIDTH);
+            }
+        }
+
+        this.setBounds(getX(), getY(), WIDTH, HEIGHT);
     }
 
 
     public void move() {
+        if (GameState.characters.size == 0) return;
+
         float prevX = getX();
         double minDistance = Double.POSITIVE_INFINITY;
         float characterX = 0, characterY = 0, dx = 0, dy = 0;

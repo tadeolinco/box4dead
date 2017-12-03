@@ -22,9 +22,13 @@ public class GameServer extends GameState implements Constants {
     private Assets assets;
 
     private float zombieTimer = 0f;
-    private float zombieSpawnRate = 10f;
+    private float zombieSpawnRate = 3f;
 
-    public GameServer() {
+    private int playerCount = 0;
+    private int numberOfPlayers;
+
+    public GameServer(int numberOfPlayers) {
+        this.numberOfPlayers = numberOfPlayers;
         characters = new ObjectMap();
         players = new ObjectMap();
         bullets = new ObjectMap();
@@ -68,6 +72,7 @@ public class GameServer extends GameState implements Constants {
 
                     // expected payload: id name
                     if (action.equals(CONNECT)) {
+                        playerCount++;
                         final String[] tokens = payload.split(" ");
 
                         // create a new net player
@@ -86,11 +91,11 @@ public class GameServer extends GameState implements Constants {
                                 String allCharacters = "";
                                 for (Iterator ite = characters.values(); ite.hasNext();) {
                                     Character c = (Character) ite.next();
-                                    allCharacters += payload(c.getId(), c.getName(), c.getX(), c.getY(), c.getColor().r, c.getColor().g, c.getColor().b);
+                                    allCharacters += payload(c.getId(), c.getName(), c.getColor().r, c.getColor().g, c.getColor().b);
                                 }
 
                                 // broadcast to every net player about that new character
-                                broadcast(action(ADD_PLAYER, payload(character.getId(), character.getName(), character.getX(), character.getY(), character.getColor().r, character.getColor().g, character.getColor().b)));
+                                broadcast(action(ADD_PLAYER, payload(character.getId(), character.getName(), character.getColor().r, character.getColor().g, character.getColor().b)));
 
                                 // send to only the new player
                                 send(player, action(RECEIVE_ALL, allCharacters));
@@ -205,14 +210,16 @@ public class GameServer extends GameState implements Constants {
             }
         }
 
-
-//        zombieTimer += Gdx.graphics.getDeltaTime();
+        if (numberOfPlayers == playerCount)  {
+            zombieTimer += Gdx.graphics.getDeltaTime();
+        }
         if (zombieTimer > zombieSpawnRate) {
             Zombie zombie = new Zombie();
             zombies.put(zombie.getId(), zombie);
             broadcast(action(ADD_ZOMBIE, payload(zombie.getId(), zombie.getX(), zombie.getY())));
             zombieTimer = zombieTimer % zombieSpawnRate;
         }
+
         for (Iterator ite = zombies.values(); ite.hasNext(); ) {
             Zombie zombie = (Zombie) ite.next();
             zombie.move();
@@ -238,6 +245,7 @@ public class GameServer extends GameState implements Constants {
     }
 
     public void broadcast(String msg){
+        Gdx.app.log("Broadcasting", msg);
         for(Iterator ite = players.values(); ite.hasNext();){
             NetPlayer player = (NetPlayer) ite.next();
             send(player, msg);

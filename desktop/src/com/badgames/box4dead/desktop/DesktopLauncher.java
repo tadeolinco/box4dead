@@ -18,7 +18,7 @@ public class DesktopLauncher {
 		} else {
             config.width = 50;
             config.height = 50;
-			new LwjglApplication(new GameServer(), config);
+			new LwjglApplication(new GameServer(Integer.parseInt(arg[1])), config);
 		}
 
 	}

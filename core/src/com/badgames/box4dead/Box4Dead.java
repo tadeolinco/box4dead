@@ -104,29 +104,19 @@ public class Box4Dead extends GameState implements Constants {
                     tokens = data.split(DELIMITER);
                     action = tokens[0];
                     payload = tokens[1];
-//                    MapObjects objects = Box4Dead.tiledMap.getLayers().get("Object Layer1").getObjects();
-//
-//                        for(MapObject obj : objects){
-//                            if(obj.getProperties().containsKey("blocked")){
-//                //                hasCollision = true;
-//                                System.out.println(obj.toString());
-//                                break;
-//                            }
-//                        }
-                    // expected payload (id name x y red green blue)++
+
+                    // expected payload (id name red green blue)++
                     if (action.equals(RECEIVE_ALL)) {
-                        final int tokenSize = 7;
+                        final int tokenSize = 5;
                         final String[] tokens = payload.split(" ");
                         Gdx.app.postRunnable(new Runnable() {
                             @Override
                             public void run() {
                                 for (int i = 0; i < tokens.length / tokenSize; ++i) {
-                                    float x = Float.parseFloat(tokens[tokenSize * i + 2]);
-                                    float y = Float.parseFloat(tokens[tokenSize * i + 3]);
-                                    float red = Float.parseFloat(tokens[tokenSize * i + 4]);
-                                    float green = Float.parseFloat(tokens[tokenSize * i + 5]);
-                                    float blue = Float.parseFloat(tokens[tokenSize * i + 6]);
-                                    Character character = new Character(tokens[tokenSize * i + 1], x, y, red, green, blue);
+                                    float red = Float.parseFloat(tokens[tokenSize * i + 2]);
+                                    float green = Float.parseFloat(tokens[tokenSize * i + 3]);
+                                    float blue = Float.parseFloat(tokens[tokenSize * i + 4]);
+                                    Character character = new Character(tokens[tokenSize * i + 1], red, green, blue);
                                     character.setId(tokens[tokenSize * i]);
                                     characters.put(character.getId(), character);
                                 }
@@ -134,18 +124,16 @@ public class Box4Dead extends GameState implements Constants {
                         });
                     }
 
-                    // expected payload: id name x y red green blue
+                    // expected payload: id name red green blue
                     if (action.equals(ADD_PLAYER)) {
                         final String[] tokens = payload.split(" ");
                         Gdx.app.postRunnable(new Runnable() {
                             @Override
                             public void run() {
-                                float x = Float.parseFloat(tokens[2]);
-                                float y = Float.parseFloat(tokens[3]);
-                                float red = Float.parseFloat(tokens[4]);
-                                float green = Float.parseFloat(tokens[5]);
-                                float blue = Float.parseFloat(tokens[6]);
-                                Character character = new Character(tokens[1], x, y, red, green, blue);
+                                float red = Float.parseFloat(tokens[2]);
+                                float green = Float.parseFloat(tokens[3]);
+                                float blue = Float.parseFloat(tokens[4]);
+                                Character character = new Character(tokens[1], red, green, blue);
                                 character.setId(tokens[0]);
                                 characters.put(character.getId(), character);
                             }
@@ -352,6 +340,7 @@ public class Box4Dead extends GameState implements Constants {
 
         for (Iterator ite = characters.values(); ite.hasNext();) {
             Character character = (Character) ite.next();
+            if (character.getId().equals(id)) continue;
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
             shapeRenderer.setColor(character.getColor());
 
@@ -369,6 +358,26 @@ public class Box4Dead extends GameState implements Constants {
             playerScores.add(new PlayerScore(character.getName(), character.getScore(), character.getColor()));
         }
 
+        Character character = (Character) characters.get(id);
+        if (character != null) {
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.setColor(character.getColor());
+
+            shapeRenderer.rect(character.getX(), character.getY(), character.getWidth(), character.getHeight());
+            shapeRenderer.end();
+
+            float hpPercent = character.getHp() / 100;
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            if (hpPercent < 0.3f) shapeRenderer.setColor(Color.RED);
+            else if (hpPercent < 0.5f) shapeRenderer.setColor(Color.ORANGE);
+            else shapeRenderer.setColor(Color.GREEN);
+            shapeRenderer.rect(character.getX(), character.getY() + character.getHeight() + 10, hpPercent * character.getWidth(), 5f);
+            shapeRenderer.end();
+
+            playerScores.add(new PlayerScore(character.getName(), character.getScore(), character.getColor()));
+        }
+
+
         for (Iterator ite = bullets.values(); ite.hasNext();) {
             Bullet bullet = (Bullet) ite.next();
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
@@ -380,7 +389,7 @@ public class Box4Dead extends GameState implements Constants {
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(0, 0, 0, 0.75f);
-        shapeRenderer.rect(GAME_WIDTH - 100, GAME_HEIGHT - (50 + playerScores.size * 20), 100, 50 + playerScores.size * 20);
+        shapeRenderer.rect(GAME_WIDTH - 150, GAME_HEIGHT - (50 + playerScores.size * 20), 150, 50 + playerScores.size * 20);
         shapeRenderer.end();
         Gdx.gl.glDisable(GL20.GL_BLEND);
 
@@ -389,8 +398,8 @@ public class Box4Dead extends GameState implements Constants {
         playerScores.sort();
         for (int i = 0; i < playerScores.size; ++i) {
             font.setColor(playerScores.get(i).color);
-            font.draw(batch, playerScores.get(i).name +":", GAME_WIDTH - 90, GAME_HEIGHT - 20 * (i + 1));
-            font.draw(batch, playerScores.get(i).score + "", GAME_WIDTH - 20, GAME_HEIGHT - 20 * (i + 1));
+            font.draw(batch, playerScores.get(i).name +":", GAME_WIDTH - 140, GAME_HEIGHT - 20 * (i + 1));
+            font.draw(batch, playerScores.get(i).score + "", GAME_WIDTH - 40, GAME_HEIGHT - 20 * (i + 1));
         }
 
         batch.end();
