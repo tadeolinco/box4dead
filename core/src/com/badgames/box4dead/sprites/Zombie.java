@@ -56,6 +56,7 @@ public class Zombie extends Sprite implements Constants {
         float characterX = 0, characterY = 0, dx = 0, dy = 0;
         for (Iterator ite = GameState.characters.values(); ite.hasNext(); ) {
             Character character = (Character) ite.next();
+            if (!character.isAlive()) continue;
             double distance = Math.sqrt(
                     Math.pow((getX() + WIDTH / 2) - (character.getX() + character.getWidth() / 2), 2)
                             + Math.pow((getY() + HEIGHT / 2) - (character.getY() + character.getHeight() / 2), 2)
@@ -66,6 +67,8 @@ public class Zombie extends Sprite implements Constants {
                 characterY = character.getY();
             }
         }
+        if (minDistance == Double.POSITIVE_INFINITY) return;
+
         if (characterX > getX()) {
             dx = getX() + SPEED * Gdx.graphics.getDeltaTime();
         }

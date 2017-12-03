@@ -5,11 +5,13 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 public class Effect {
-    private float x, y, timer;
+    private float x, y, width, height, timer;
 
-    public Effect(float x, float y, float timer) {
+    public Effect(float x, float y, float width, float height, float timer) {
         this.x = x;
         this.y = y;
+        this.width = width;
+        this.height = height;
         this.timer = timer;
     }
 
@@ -41,5 +43,21 @@ public class Effect {
 
     public void setTimer(float timer) {
         this.timer = timer;
+    }
+
+    public float getWidth() {
+        return width;
+    }
+
+    public void setWidth(float width) {
+        this.width = width;
+    }
+
+    public float getHeight() {
+        return height;
+    }
+
+    public void setHeight(float height) {
+        this.height = height;
     }
 }

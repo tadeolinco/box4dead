@@ -7,9 +7,9 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 public class DeathEffect extends Effect {
     private Color color;
 
-    public DeathEffect(float x, float y, Color color) {
-        super(x, y, 0.4f);
-        this.color = new Color(0.3f, 0.3f, 0.3f, 1);
+    public DeathEffect(float x, float y, float width, float height, Color color) {
+        super(x, y, width, height,0.4f);
+        this.color = new Color(color);
     }
 
     @Override
@@ -17,7 +17,7 @@ public class DeathEffect extends Effect {
         if (getTimer() <= 0.3f && getTimer() > 0.2f || getTimer() <= 0.1f && getTimer() > 0) {
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
             shapeRenderer.setColor(color);
-            shapeRenderer.rect(getX(), getY(), Zombie.WIDTH, Zombie.HEIGHT);
+            shapeRenderer.rect(getX(), getY(), getWidth(), getHeight());
             shapeRenderer.end();
         }
     }

@@ -190,6 +190,7 @@ public class GameServer extends GameState implements Constants {
                 }
                 bullets.remove(bullet.getId());
                 broadcast(action(KILL_BULLET, payload(bullet.getId())));
+                continue;
             }
 
             // check if bullet is out of the world
@@ -203,10 +204,25 @@ public class GameServer extends GameState implements Constants {
 
         for (Iterator ite = characters.values(); ite.hasNext(); ) {
             Character character = (Character) ite.next();
+            if (character.getHp() <= 0 && character.isAlive()) {
+                character.kill();
+                broadcast(action(KILL_PLAYER, payload(character.getId())));
+                continue;
+            }
+
             if (character.handleRegen()) {
                 float hp = 1;
                 character.setHp(character.getHp() + hp);
                 broadcast(action(CHANGE_HP_PLAYER, payload(character.getId(), character.getHp())));
+            }
+            if (!character.isAlive()) {
+                character.setSpawnTimer(character.getSpawnTimer() - Gdx.graphics.getDeltaTime());
+                if (character.getSpawnTimer() < 0) {
+                    character.spawn();
+                    broadcast(action(SPAWN_PLAYER, payload(character.getId())));
+                } else {
+                    broadcast(action(CHANGE_SPAWN_TIMER, payload(character.getId(), character.getSpawnTimer())));
+                }
             }
         }
 
@@ -245,7 +261,10 @@ public class GameServer extends GameState implements Constants {
     }
 
     public void broadcast(String msg){
+        if (!msg.startsWith(MOVE_ZOMBIE)) {
+
         Gdx.app.log("Broadcasting", msg);
+        }
         for(Iterator ite = players.values(); ite.hasNext();){
             NetPlayer player = (NetPlayer) ite.next();
             send(player, msg);

@@ -23,12 +23,15 @@ public class Character extends Sprite implements Constants {
     public static int HEIGHT = 60;
     public static float MAX_HP = 100f;
     public static float REGEN_RATE = 0.5f;
+    public static float SPAWN_RATE = 10f;
 
     private String id, name;
     private int facing = DOWN;
     private float hp = MAX_HP;
     private float regenCounter = 0;
     private int score = 0;
+    private boolean isAlive = true;
+    private float spawnTimer = 0f;
 
 
     public Character(String name, float red, float green, float blue) {
@@ -107,7 +110,7 @@ public class Character extends Sprite implements Constants {
 
         boolean isOverlapping = wallCollision();
 
-
+// removed to only have one spawn point for all characters, easier implementation for spawn points
 //        if (!isOverlapping) {
     //        for (Iterator ite = GameState.characters.values(); ite.hasNext();) {
     //            Character character = (Character) ite.next();
@@ -170,6 +173,23 @@ public class Character extends Sprite implements Constants {
         return false;
     }
 
+    public void spawn() {
+        spawnTimer = 0;
+        hp = MAX_HP;
+        setX(GAME_WIDTH / 2 - WIDTH / 2);
+        setY(GAME_HEIGHT / 2 - HEIGHT / 2);
+        isAlive = true;
+    }
+
+    public void kill() {
+        spawnTimer = SPAWN_RATE;
+        isAlive = false;
+        score -= Math.ceil(score / 5);
+        if (score < 0) score = 0;
+    }
+
+
+
     public String getName() {
         return name;
     }
@@ -208,5 +228,21 @@ public class Character extends Sprite implements Constants {
 
     public void setScore(int score) {
         this.score = score;
+    }
+
+    public boolean isAlive() {
+        return isAlive;
+    }
+
+    public void setAlive(boolean alive) {
+        isAlive = alive;
+    }
+
+    public float getSpawnTimer() {
+        return spawnTimer;
+    }
+
+    public void setSpawnTimer(float spawnTimer) {
+        this.spawnTimer = spawnTimer;
     }
 }

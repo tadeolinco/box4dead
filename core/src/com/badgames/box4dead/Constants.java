@@ -22,6 +22,9 @@ public interface Constants {
     String MOVE_PLAYER = "MOVE_PLAYER";
     String CHANGE_HP_PLAYER = "CHANGE_HP_PLAYER";
     String CHANGE_SCORE = "CHANGE_SCORE";
+    String CHANGE_SPAWN_TIMER = "CHANGE_SPAWN_TIMER";
+    String KILL_PLAYER = "KILL_PLAYER";
+    String SPAWN_PLAYER = "SPAWN_PLAYER";
 
     String ADD_BULLET = "ADD_BULLET";
     String MOVE_BULLET = "MOVE_BULLET";

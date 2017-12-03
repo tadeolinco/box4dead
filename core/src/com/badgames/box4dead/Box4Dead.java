@@ -18,6 +18,7 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
+import sun.security.provider.SHA;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -178,6 +179,43 @@ public class Box4Dead extends GameState implements Constants {
                         });
                     }
 
+                    // expected payload: id
+                    if (action.equals(KILL_PLAYER)) {
+                        final String[] tokens = payload.split(" ");
+                        Gdx.app.postRunnable(new Runnable() {
+                            @Override
+                            public void run() {
+                                Character character = (Character) characters.get(tokens[0]);
+                                character.kill();
+                                effects.add(new DeathEffect(character.getX(), character.getY(), Character.WIDTH, Character.HEIGHT, character.getColor()));
+                            }
+                        });
+                    }
+
+                    // expected payload: id spawnTimer
+                    if (action.equals(CHANGE_SPAWN_TIMER)) {
+                        final String[] tokens = payload.split(" ");
+                        Gdx.app.postRunnable(new Runnable() {
+                            @Override
+                            public void run() {
+                                Character character = (Character) characters.get(tokens[0]);
+                                character.setSpawnTimer(Float.parseFloat(tokens[1]));
+                            }
+                        });
+                    }
+
+                    // expected payload: id
+                    if (action.equals(SPAWN_PLAYER)) {
+                        final String[] tokens = payload.split(" ");
+                        Gdx.app.postRunnable(new Runnable() {
+                            @Override
+                            public void run() {
+                                Character character = (Character) characters.get(tokens[0]);
+                                character.spawn();
+                            }
+                        });
+                    }
+
                     // expected payload: id character_id x y facing
                     if (action.equals(ADD_BULLET)) {
                         final String[] tokens = payload.split(" ");
@@ -256,7 +294,7 @@ public class Box4Dead extends GameState implements Constants {
                             @Override
                             public void run() {
                                 Zombie zombie = (Zombie) zombies.get(tokens[0]);
-                                effects.add(new DeathEffect(zombie.getX(), zombie.getY(), zombie.getColor()));
+                                effects.add(new DeathEffect(zombie.getX(), zombie.getY(), Zombie.WIDTH, Zombie.HEIGHT, zombie.getColor()));
                                 zombies.remove(tokens[0]);
                             }
                         });
@@ -289,7 +327,7 @@ public class Box4Dead extends GameState implements Constants {
 
     public void update() {
 	    Character character = (Character) characters.get(id);
-        if (character != null) {
+        if (character != null && character.isAlive()) {
             boolean hasMoved = character.handleMove();
              if (hasMoved) {
                 send(action(MOVE_PLAYER, payload(character.getId(), character.getX(), character.getY(), character.getFacing())));
@@ -341,38 +379,42 @@ public class Box4Dead extends GameState implements Constants {
         for (Iterator ite = characters.values(); ite.hasNext();) {
             Character character = (Character) ite.next();
             if (character.getId().equals(id)) continue;
-            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-            shapeRenderer.setColor(character.getColor());
+            if (character.isAlive()) {
+                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                shapeRenderer.setColor(character.getColor());
 
-            shapeRenderer.rect(character.getX(), character.getY(), character.getWidth(), character.getHeight());
-            shapeRenderer.end();
+                shapeRenderer.rect(character.getX(), character.getY(), character.getWidth(), character.getHeight());
+                shapeRenderer.end();
 
-            float hpPercent = character.getHp() / 100;
-            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-            if (hpPercent < 0.3f) shapeRenderer.setColor(Color.RED);
-            else if (hpPercent < 0.5f) shapeRenderer.setColor(Color.ORANGE);
-            else shapeRenderer.setColor(Color.GREEN);
-            shapeRenderer.rect(character.getX(), character.getY() + character.getHeight() + 10, hpPercent * character.getWidth(), 5f);
-            shapeRenderer.end();
+                float hpPercent = character.getHp() / 100;
+                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                if (hpPercent < 0.3f) shapeRenderer.setColor(Color.RED);
+                else if (hpPercent < 0.5f) shapeRenderer.setColor(Color.ORANGE);
+                else shapeRenderer.setColor(Color.GREEN);
+                shapeRenderer.rect(character.getX(), character.getY() + character.getHeight() + 10, hpPercent * character.getWidth(), 5f);
+                shapeRenderer.end();
+            }
 
             playerScores.add(new PlayerScore(character.getName(), character.getScore(), character.getColor()));
         }
 
         Character character = (Character) characters.get(id);
-        if (character != null) {
-            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-            shapeRenderer.setColor(character.getColor());
+        if (character != null)  {
+            if (character.isAlive()) {
+                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                shapeRenderer.setColor(character.getColor());
 
-            shapeRenderer.rect(character.getX(), character.getY(), character.getWidth(), character.getHeight());
-            shapeRenderer.end();
+                shapeRenderer.rect(character.getX(), character.getY(), character.getWidth(), character.getHeight());
+                shapeRenderer.end();
 
-            float hpPercent = character.getHp() / 100;
-            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-            if (hpPercent < 0.3f) shapeRenderer.setColor(Color.RED);
-            else if (hpPercent < 0.5f) shapeRenderer.setColor(Color.ORANGE);
-            else shapeRenderer.setColor(Color.GREEN);
-            shapeRenderer.rect(character.getX(), character.getY() + character.getHeight() + 10, hpPercent * character.getWidth(), 5f);
-            shapeRenderer.end();
+                float hpPercent = character.getHp() / 100;
+                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                if (hpPercent < 0.3f) shapeRenderer.setColor(Color.RED);
+                else if (hpPercent < 0.5f) shapeRenderer.setColor(Color.ORANGE);
+                else shapeRenderer.setColor(Color.GREEN);
+                shapeRenderer.rect(character.getX(), character.getY() + character.getHeight() + 10, hpPercent * character.getWidth(), 5f);
+                shapeRenderer.end();
+            }
 
             playerScores.add(new PlayerScore(character.getName(), character.getScore(), character.getColor()));
         }
@@ -391,6 +433,13 @@ public class Box4Dead extends GameState implements Constants {
         shapeRenderer.setColor(0, 0, 0, 0.75f);
         shapeRenderer.rect(GAME_WIDTH - 150, GAME_HEIGHT - (50 + playerScores.size * 20), 150, 50 + playerScores.size * 20);
         shapeRenderer.end();
+
+        if (character != null && !character.isAlive()) {
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.setColor(0, 0, 0, 0.75f);
+            shapeRenderer.rect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+            shapeRenderer.end();
+        }
         Gdx.gl.glDisable(GL20.GL_BLEND);
 
         batch.begin();
@@ -400,6 +449,11 @@ public class Box4Dead extends GameState implements Constants {
             font.setColor(playerScores.get(i).color);
             font.draw(batch, playerScores.get(i).name +":", GAME_WIDTH - 140, GAME_HEIGHT - 20 * (i + 1));
             font.draw(batch, playerScores.get(i).score + "", GAME_WIDTH - 40, GAME_HEIGHT - 20 * (i + 1));
+        }
+
+
+        if (character != null && !character.isAlive()) {
+            font.draw(batch, "YOU ARE DEAD (" + Math.round(character.getSpawnTimer()) + ")", GAME_WIDTH / 2 - 65, GAME_HEIGHT / 2);
         }
 
         batch.end();
