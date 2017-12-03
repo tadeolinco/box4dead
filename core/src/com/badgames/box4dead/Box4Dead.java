@@ -11,7 +11,6 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
@@ -27,14 +26,13 @@ import java.util.Iterator;
 import java.util.UUID;
 
 
-public class Box4Dead extends GameClient implements Constants {
+public class Box4Dead extends GameState implements Constants {
 	SpriteBatch batch;
 	String server, name, data, action, payload, id;
 	boolean connected;
 	DatagramSocket socket;
 	DatagramPacket packet;
 	String[] tokens;
-    public static TiledMap tiledMap;
     TiledMapRenderer tiledMapRenderer;
 //    TiledMapTileLayerz
     ShapeRenderer shapeRenderer;

@@ -4,6 +4,7 @@ import com.badgames.box4dead.sprites.Bullet;
 import com.badgames.box4dead.sprites.Character;
 import com.badgames.box4dead.sprites.Zombie;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.utils.ObjectMap;
 
 import java.io.IOException;
@@ -12,7 +13,7 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.Iterator;
 
-public class GameServer extends GameClient implements Constants {
+public class GameServer extends GameState implements Constants {
     private ObjectMap players;
     private DatagramSocket socket;
     private DatagramPacket packet;
@@ -44,6 +45,7 @@ public class GameServer extends GameClient implements Constants {
     public void create() {
         assets.load();
         assets.getManager().finishLoading();
+        tiledMap = new TmxMapLoader().load("map/gameMap.tmx");
 
         new Thread(new Runnable() {
             @Override

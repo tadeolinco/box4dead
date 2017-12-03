@@ -1,8 +1,7 @@
 package com.badgames.box4dead.sprites;
 
 import com.badgames.box4dead.Constants;
-import com.badgames.box4dead.GameClient;
-import com.badgames.box4dead.Box4Dead;
+import com.badgames.box4dead.GameState;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
@@ -10,7 +9,6 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObjects;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
 
@@ -109,7 +107,7 @@ public class Character extends Sprite implements Constants {
         boolean isOverlapping = false;
 
 
-        for (Iterator ite = GameClient.characters.values(); ite.hasNext();) {
+        for (Iterator ite = GameState.characters.values(); ite.hasNext();) {
             Character character = (Character) ite.next();
             if (!id.equals(character.getId()) && getBoundingRectangle().overlaps(character.getBoundingRectangle()) || wallCollision(character) ) {
                 isOverlapping = true;
@@ -118,7 +116,7 @@ public class Character extends Sprite implements Constants {
         }
 
         if (!isOverlapping) {
-            for (Iterator ite = GameClient.zombies.values(); ite.hasNext(); ) {
+            for (Iterator ite = GameState.zombies.values(); ite.hasNext(); ) {
                 Zombie zombie = (Zombie) ite.next();
                 if (getBoundingRectangle().overlaps(zombie.getBoundingRectangle())) {
                     isOverlapping = true;
@@ -151,7 +149,7 @@ public class Character extends Sprite implements Constants {
 
 
     public boolean wallCollision(Character character){
-        MapLayer collisionObjectLayer = Box4Dead.tiledMap.getLayers().get("Object Layer 1");
+        MapLayer collisionObjectLayer = GameState.tiledMap.getLayers().get("Object Layer 1");
         MapObjects objects = collisionObjectLayer.getObjects();
         for (RectangleMapObject rectangleObject : objects.getByType(RectangleMapObject.class)) {
             Rectangle rectangle = rectangleObject.getRectangle();

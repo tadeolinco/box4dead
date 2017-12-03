@@ -1,11 +1,9 @@
 package com.badgames.box4dead.sprites;
 
-import com.badgames.box4dead.Assets;
 import com.badgames.box4dead.Constants;
-import com.badgames.box4dead.GameClient;
+import com.badgames.box4dead.GameState;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 
 import java.util.Iterator;
@@ -63,7 +61,7 @@ public class Bullet extends Sprite implements Constants {
     }
 
     public String hitCharacter() {
-        for (Iterator ite = GameClient.characters.values(); ite.hasNext(); ) {
+        for (Iterator ite = GameState.characters.values(); ite.hasNext(); ) {
             Character character = (Character) ite.next();
             if (!characterId.equals(character.getId()) && getBoundingRectangle().overlaps(character.getBoundingRectangle())) {
                 return character.getId();
@@ -73,7 +71,7 @@ public class Bullet extends Sprite implements Constants {
     }
 
     public String hitZombie() {
-        for (Iterator ite = GameClient.zombies.values(); ite.hasNext(); ) {
+        for (Iterator ite = GameState.zombies.values(); ite.hasNext(); ) {
             Zombie zombie = (Zombie) ite.next();
             if (getBoundingRectangle().overlaps(zombie.getBoundingRectangle())) {
                 return zombie.getId();

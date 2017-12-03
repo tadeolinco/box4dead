@@ -1,7 +1,7 @@
 package com.badgames.box4dead.sprites;
 
 import com.badgames.box4dead.Constants;
-import com.badgames.box4dead.GameClient;
+import com.badgames.box4dead.GameState;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -35,7 +35,7 @@ public class Zombie extends Sprite implements Constants {
         float prevX = getX();
         double minDistance = Double.POSITIVE_INFINITY;
         float characterX = 0, characterY = 0, dx = 0, dy = 0;
-        for (Iterator ite = GameClient.characters.values(); ite.hasNext(); ) {
+        for (Iterator ite = GameState.characters.values(); ite.hasNext(); ) {
             Character character = (Character) ite.next();
             double distance = Math.sqrt(
                     Math.pow((getX() + WIDTH / 2) - (character.getX() + character.getWidth() / 2), 2)
@@ -63,8 +63,8 @@ public class Zombie extends Sprite implements Constants {
 
         boolean moveableX = true;
         boolean moveableY = true;
-        for (Iterator ite = GameClient.zombies.keys(); ite.hasNext(); ) {
-            Zombie zombie = (Zombie) GameClient.zombies.get(ite.next());
+        for (Iterator ite = GameState.zombies.keys(); ite.hasNext(); ) {
+            Zombie zombie = (Zombie) GameState.zombies.get(ite.next());
             if (!id.equals(zombie.getId())) {
                 Rectangle bounds = new Rectangle(getBoundingRectangle());
                 bounds.setX(dx);
@@ -80,7 +80,7 @@ public class Zombie extends Sprite implements Constants {
             }
         }
         if (moveableX || moveableY) {
-            for (Iterator ite = GameClient.characters.values(); ite.hasNext(); ) {
+            for (Iterator ite = GameState.characters.values(); ite.hasNext(); ) {
                 Character character = (Character) ite.next();
                 Rectangle bounds = new Rectangle(getBoundingRectangle());
                 bounds.setX(dx);
@@ -106,7 +106,7 @@ public class Zombie extends Sprite implements Constants {
             attackTimer = attackTimer % 1;
 
             double minDistance = (Character.WIDTH / 2 + WIDTH / 2) * 1.2;
-            for (Iterator ite = GameClient.characters.values(); ite.hasNext(); ) {
+            for (Iterator ite = GameState.characters.values(); ite.hasNext(); ) {
                 Character character = (Character) ite.next();
                 double distance = Math.sqrt(
                         Math.pow((getX() + WIDTH / 2) - (character.getX() + character.getWidth() / 2), 2)
@@ -139,7 +139,7 @@ public class Zombie extends Sprite implements Constants {
         }
 
         boolean overlapping = false;
-        for (Iterator ite = GameClient.zombies.values(); ite.hasNext(); ) {
+        for (Iterator ite = GameState.zombies.values(); ite.hasNext(); ) {
             Zombie zombie = (Zombie) ite.next();
             if (!id.equals(zombie.getId()) && getBoundingRectangle().overlaps(zombie.getBoundingRectangle())) {
                 overlapping = true;
@@ -148,7 +148,7 @@ public class Zombie extends Sprite implements Constants {
         }
 
         if (!overlapping) {
-            for (Iterator ite = GameClient.characters.values(); ite.hasNext(); ) {
+            for (Iterator ite = GameState.characters.values(); ite.hasNext(); ) {
                 Character character = (Character) ite.next();
                 if (getBoundingRectangle().overlaps(character.getBoundingRectangle())) {
                     overlapping = true;
