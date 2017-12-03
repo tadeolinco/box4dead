@@ -13,7 +13,7 @@ public class Bullet extends Sprite implements Constants {
     public static final float SPEED = 1000f;
     public static final float WIDTH = 10;
     public static final float HEIGHT = 10;
-    String id, characterId  ;
+    String id, characterId ;
     int facing;
     float damage = 10f;
 
@@ -104,5 +104,13 @@ public class Bullet extends Sprite implements Constants {
 
     public void setDamage(float damage) {
         this.damage = damage;
+    }
+
+    public String getCharacterId() {
+        return characterId;
+    }
+
+    public void setCharacterId(String characterId) {
+        this.characterId = characterId;
     }
 }

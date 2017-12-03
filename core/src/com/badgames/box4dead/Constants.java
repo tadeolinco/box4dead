@@ -21,6 +21,7 @@ public interface Constants {
     String ADD_PLAYER = "ADD_PLAYER";
     String MOVE_PLAYER = "MOVE_PLAYER";
     String CHANGE_HP_PLAYER = "CHANGE_HP_PLAYER";
+    String CHANGE_SCORE = "CHANGE_SCORE";
 
     String ADD_BULLET = "ADD_BULLET";
     String MOVE_BULLET = "MOVE_BULLET";

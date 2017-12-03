@@ -5,10 +5,12 @@ import com.badgames.box4dead.effects.DeathEffect;
 import com.badgames.box4dead.sprites.Bullet;
 import com.badgames.box4dead.sprites.Character;
 import com.badgames.box4dead.sprites.Zombie;
+import com.badgames.box4dead.util.PlayerScore;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
@@ -36,7 +38,9 @@ public class Box4Dead extends GameState implements Constants {
     TiledMapRenderer tiledMapRenderer;
 //    TiledMapTileLayerz
     ShapeRenderer shapeRenderer;
+    BitmapFont font;
 
+    private Array<PlayerScore> playerScores;
     private Assets assets;
     private OrthographicCamera camera;
     private Array<Effect> effects;
@@ -58,6 +62,7 @@ public class Box4Dead extends GameState implements Constants {
         zombies = new ObjectMap();
         assets = new Assets();
         effects = new Array<Effect>();
+        playerScores = new Array<PlayerScore>();
 	}
 
 
@@ -70,7 +75,7 @@ public class Box4Dead extends GameState implements Constants {
 		camera.setToOrtho(false, GAME_WIDTH, GAME_HEIGHT);
         tiledMap = new TmxMapLoader().load("map/gameMap.tmx");
         tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
-
+        font = new BitmapFont();
         shapeRenderer = new ShapeRenderer();
 
 		new Thread(new Runnable() {
@@ -169,6 +174,18 @@ public class Box4Dead extends GameState implements Constants {
                             public void run() {
                                 Character character = (Character) characters.get(tokens[0]);
                                 character.setHp(Float.parseFloat(tokens[1]));
+                            }
+                        });
+                    }
+
+                    // expected payload: id score
+                    if (action.equals(CHANGE_SCORE)) {
+                        final String[] tokens = payload.split(" ");
+                        Gdx.app.postRunnable(new Runnable() {
+                            @Override
+                            public void run() {
+                                Character character = (Character) characters.get(tokens[0]);
+                                character.setScore(Integer.parseInt(tokens[1]));
                             }
                         });
                     }
@@ -307,6 +324,7 @@ public class Box4Dead extends GameState implements Constants {
 
 	@Override
 	public void render () {
+	    playerScores.clear();
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         tiledMapRenderer.setView(camera);
@@ -316,7 +334,6 @@ public class Box4Dead extends GameState implements Constants {
         update();
 
         shapeRenderer.setProjectionMatrix(camera.combined);
-
 
         for (Iterator ite = effects.iterator(); ite.hasNext(); ) {
             Effect effect = (Effect) ite.next();
@@ -348,6 +365,8 @@ public class Box4Dead extends GameState implements Constants {
             else shapeRenderer.setColor(Color.GREEN);
             shapeRenderer.rect(character.getX(), character.getY() + character.getHeight() + 10, hpPercent * character.getWidth(), 5f);
             shapeRenderer.end();
+
+            playerScores.add(new PlayerScore(character.getName(), character.getScore(), character.getColor()));
         }
 
         for (Iterator ite = bullets.values(); ite.hasNext();) {
@@ -357,7 +376,24 @@ public class Box4Dead extends GameState implements Constants {
             shapeRenderer.rect(bullet.getX(), bullet.getY(), bullet.getWidth(), bullet.getHeight());
             shapeRenderer.end();
         }
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(0, 0, 0, 0.75f);
+        shapeRenderer.rect(GAME_WIDTH - 100, GAME_HEIGHT - (50 + playerScores.size * 20), 100, 50 + playerScores.size * 20);
+        shapeRenderer.end();
+        Gdx.gl.glDisable(GL20.GL_BLEND);
 
+        batch.begin();
+
+        playerScores.sort();
+        for (int i = 0; i < playerScores.size; ++i) {
+            font.setColor(playerScores.get(i).color);
+            font.draw(batch, playerScores.get(i).name +":", GAME_WIDTH - 90, GAME_HEIGHT - 20 * (i + 1));
+            font.draw(batch, playerScores.get(i).score + "", GAME_WIDTH - 20, GAME_HEIGHT - 20 * (i + 1));
+        }
+
+        batch.end();
 	}
 	
 	@Override

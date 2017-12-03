@@ -167,12 +167,16 @@ public class GameServer extends GameState implements Constants {
 
             // check if bullet hit a zombie
             String zombieId = bullet.hitZombie();
+
             if (!zombieId.equals("")) {
                 Zombie zombie = (Zombie) zombies.get(zombieId);
                 zombie.setHp(zombie.getHp() - bullet.getDamage());
                 if (zombie.getHp() < 0) {
                     zombies.remove(zombie.getId());
                     broadcast(action(KILL_ZOMBIE, payload(zombie.getId())));
+                    Character character = (Character) characters.get(bullet.getCharacterId());
+                    character.setScore(character.getScore() + 1);
+                    broadcast(action(CHANGE_SCORE, payload(character.getId(), character.getScore())));
                 } else {
                     if (zombie.handleKnockBack(bullet.getFacing(), 15)) {
                         broadcast(action(MOVE_ZOMBIE, payload(zombie.getId(), zombie.getX(), zombie.getY())));
@@ -202,7 +206,7 @@ public class GameServer extends GameState implements Constants {
         }
 
 
-        zombieTimer += Gdx.graphics.getDeltaTime();
+//        zombieTimer += Gdx.graphics.getDeltaTime();
         if (zombieTimer > zombieSpawnRate) {
             Zombie zombie = new Zombie();
             zombies.put(zombie.getId(), zombie);

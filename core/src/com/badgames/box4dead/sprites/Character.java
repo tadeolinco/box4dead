@@ -19,8 +19,8 @@ public class Character extends Sprite implements Constants {
 
 
     public static float SPEED = 400f;
-    public static int WIDTH = 75;
-    public static int HEIGHT = 75;
+    public static int WIDTH = 60;
+    public static int HEIGHT = 60;
     public static float MAX_HP = 100f;
     public static float REGEN_RATE = 0.5f;
 
@@ -28,6 +28,7 @@ public class Character extends Sprite implements Constants {
     private int facing = DOWN;
     private float hp = MAX_HP;
     private float regenCounter = 0;
+    private int score = 0;
 
 
     public Character(String name, float x, float y, float red, float green, float blue) {
@@ -104,16 +105,18 @@ public class Character extends Sprite implements Constants {
         this.setX(x);
         this.setY(y);
 
-        boolean isOverlapping = false;
+        boolean isOverlapping = wallCollision();
 
 
-        for (Iterator ite = GameState.characters.values(); ite.hasNext();) {
-            Character character = (Character) ite.next();
-            if (!id.equals(character.getId()) && getBoundingRectangle().overlaps(character.getBoundingRectangle()) || wallCollision(character) ) {
-                isOverlapping = true;
-                break;
-            }
-        }
+//        if (!isOverlapping) {
+    //        for (Iterator ite = GameState.characters.values(); ite.hasNext();) {
+    //            Character character = (Character) ite.next();
+    //            if (!id.equals(character.getId()) && getBoundingRectangle().overlaps(character.getBoundingRectangle())) {
+    //                isOverlapping = true;
+    //                break;
+    //            }
+    //        }
+//        }
 
         if (!isOverlapping) {
             for (Iterator ite = GameState.zombies.values(); ite.hasNext(); ) {
@@ -148,12 +151,12 @@ public class Character extends Sprite implements Constants {
     }
 
 
-    public boolean wallCollision(Character character){
+    public boolean wallCollision(){
         MapLayer collisionObjectLayer = GameState.tiledMap.getLayers().get("Object Layer 1");
         MapObjects objects = collisionObjectLayer.getObjects();
         for (RectangleMapObject rectangleObject : objects.getByType(RectangleMapObject.class)) {
             Rectangle rectangle = rectangleObject.getRectangle();
-            if (Intersector.overlaps(rectangle, character.getBoundingRectangle())) {
+            if (Intersector.overlaps(rectangle, getBoundingRectangle())) {
                 return true;
             }
         }
@@ -197,5 +200,13 @@ public class Character extends Sprite implements Constants {
 
     public void setHp(float hp) {
         this.hp = Math.max(0, Math.min(MAX_HP, hp));
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
     }
 }
