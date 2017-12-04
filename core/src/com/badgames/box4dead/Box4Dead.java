@@ -45,6 +45,9 @@ public class Box4Dead extends GameState implements Constants {
     ShapeRenderer shapeRenderer;
     BitmapFont font;
 
+    MenuScreen menu;
+    float elapsed;
+
     private Array<PlayerScore> playerScores;
     private Assets assets;
     private OrthographicCamera camera;
@@ -88,6 +91,8 @@ public class Box4Dead extends GameState implements Constants {
         tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
         font = new BitmapFont();
         shapeRenderer = new ShapeRenderer();
+        menu = new MenuScreen(this);
+        setScreen(menu);
 
 
 		new Thread(new Runnable() {
@@ -380,147 +385,161 @@ public class Box4Dead extends GameState implements Constants {
 
 	@Override
 	public void render () {
-	    playerScores.clear();
-		Gdx.gl.glClearColor(0, 0, 0, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        camera.update();
-        update();
-        batch.setProjectionMatrix(camera.combined);
-        shapeRenderer.setProjectionMatrix(camera.combined);
+	    elapsed += Gdx.graphics.getDeltaTime();
 
-
-        for (Iterator ite = characters.values(); ite.hasNext();) {
-            Character character = (Character) ite.next();
-            playerScores.add(new PlayerScore(character.getName(), character.getScore(), character.getColor()));
+	    if(elapsed < 10){
+	        super.render();
         }
-
-        if (GameState.isGamePlaying) {
-
-            tiledMapRenderer.setView(camera);
-            tiledMapRenderer.render();
-
-            for (Iterator ite = effects.iterator(); ite.hasNext(); ) {
-                Effect effect = (Effect) ite.next();
-                effect.draw(shapeRenderer);
-            }
-
-
-            for (Iterator ite = zombies.values(); ite.hasNext(); ) {
-                Zombie zombie = (Zombie) ite.next();
-                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-                shapeRenderer.setColor(zombie.getColor());
-                shapeRenderer.rect(zombie.getX(), zombie.getY(), zombie.getWidth(), zombie.getHeight());
-                shapeRenderer.end();
-            }
+        else{
+            playerScores.clear();
+            Gdx.gl.glClearColor(0, 0, 0, 1);
+            Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+            camera.update();
+            update();
+            batch.setProjectionMatrix(camera.combined);
+            shapeRenderer.setProjectionMatrix(camera.combined);
 
 
             for (Iterator ite = characters.values(); ite.hasNext();) {
                 Character character = (Character) ite.next();
-                if (character.getId().equals(id)) continue;
-                if (character.isAlive()) {
-                    shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-                    shapeRenderer.setColor(character.getColor());
+                playerScores.add(new PlayerScore(character.getName(), character.getScore(), character.getColor()));
+            }
 
-                    shapeRenderer.rect(character.getX(), character.getY(), character.getWidth(), character.getHeight());
-                    shapeRenderer.end();
+            if (GameState.isGamePlaying) {
 
-                    float hpPercent = character.getHp() / 100;
+                tiledMapRenderer.setView(camera);
+                tiledMapRenderer.render();
+
+                for (Iterator ite = effects.iterator(); ite.hasNext(); ) {
+                    Effect effect = (Effect) ite.next();
+                    effect.draw(shapeRenderer);
+                }
+
+
+                for (Iterator ite = zombies.values(); ite.hasNext(); ) {
+                    Zombie zombie = (Zombie) ite.next();
                     shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-                    if (hpPercent < 0.3f) shapeRenderer.setColor(Color.RED);
-                    else if (hpPercent < 0.5f) shapeRenderer.setColor(Color.ORANGE);
-                    else shapeRenderer.setColor(Color.GREEN);
-                    shapeRenderer.rect(character.getX(), character.getY() + character.getHeight() + 10, hpPercent * character.getWidth(), 5f);
+                    shapeRenderer.setColor(zombie.getColor());
+                    shapeRenderer.rect(zombie.getX(), zombie.getY(), zombie.getWidth(), zombie.getHeight());
                     shapeRenderer.end();
                 }
-            }
 
 
-            // make sure to render own character above everyone else's
-            Character character = (Character) characters.get(id);
-            if (character != null)  {
-                if (character.isAlive()) {
+                for (Iterator ite = characters.values(); ite.hasNext();) {
+                    Character character = (Character) ite.next();
+                    if (character.getId().equals(id)) continue;
+                    if (character.isAlive()) {
+                        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                        shapeRenderer.setColor(character.getColor());
+
+                        shapeRenderer.rect(character.getX(), character.getY(), character.getWidth(), character.getHeight());
+                        shapeRenderer.end();
+
+                        float hpPercent = character.getHp() / 100;
+                        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                        if (hpPercent < 0.3f) shapeRenderer.setColor(Color.RED);
+                        else if (hpPercent < 0.5f) shapeRenderer.setColor(Color.ORANGE);
+                        else shapeRenderer.setColor(Color.GREEN);
+                        shapeRenderer.rect(character.getX(), character.getY() + character.getHeight() + 10, hpPercent * character.getWidth(), 5f);
+                        shapeRenderer.end();
+                    }
+                }
+
+
+                // make sure to render own character above everyone else's
+                Character character = (Character) characters.get(id);
+                if (character != null)  {
+                    if (character.isAlive()) {
+                        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                        shapeRenderer.setColor(character.getColor());
+
+                        shapeRenderer.rect(character.getX(), character.getY(), character.getWidth(), character.getHeight());
+                        shapeRenderer.end();
+
+                        float hpPercent = character.getHp() / 100;
+                        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                        if (hpPercent < 0.3f) shapeRenderer.setColor(Color.RED);
+                        else if (hpPercent < 0.5f) shapeRenderer.setColor(Color.ORANGE);
+                        else shapeRenderer.setColor(Color.GREEN);
+                        shapeRenderer.rect(character.getX(), character.getY() + character.getHeight() + 10, hpPercent * character.getWidth(), 5f);
+                        shapeRenderer.end();
+                    }
+                }
+
+
+
+
+                for (Iterator ite = bullets.values(); ite.hasNext();) {
+                    Bullet bullet = (Bullet) ite.next();
                     shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-                    shapeRenderer.setColor(character.getColor());
-
-                    shapeRenderer.rect(character.getX(), character.getY(), character.getWidth(), character.getHeight());
-                    shapeRenderer.end();
-
-                    float hpPercent = character.getHp() / 100;
-                    shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-                    if (hpPercent < 0.3f) shapeRenderer.setColor(Color.RED);
-                    else if (hpPercent < 0.5f) shapeRenderer.setColor(Color.ORANGE);
-                    else shapeRenderer.setColor(Color.GREEN);
-                    shapeRenderer.rect(character.getX(), character.getY() + character.getHeight() + 10, hpPercent * character.getWidth(), 5f);
+                    shapeRenderer.setColor(bullet.getColor());
+                    shapeRenderer.rect(bullet.getX(), bullet.getY(), bullet.getWidth(), bullet.getHeight());
                     shapeRenderer.end();
                 }
+
+                // death overlay
+
+                Gdx.gl.glEnable(GL20.GL_BLEND);
+                Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+                if (character != null && !character.isAlive()) {
+                    shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                    shapeRenderer.setColor(0, 0, 0, 0.75f);
+                    shapeRenderer.rect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+                    shapeRenderer.end();
+                }
+                Gdx.gl.glDisable(GL20.GL_BLEND);
             }
-
-
-
-
-            for (Iterator ite = bullets.values(); ite.hasNext();) {
-                Bullet bullet = (Bullet) ite.next();
-                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-                shapeRenderer.setColor(bullet.getColor());
-                shapeRenderer.rect(bullet.getX(), bullet.getY(), bullet.getWidth(), bullet.getHeight());
-                shapeRenderer.end();
-            }
-
-            // death overlay
-
             Gdx.gl.glEnable(GL20.GL_BLEND);
             Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+            // scores overlay
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.setColor(0, 0, 0, 0.75f);
+            shapeRenderer.rect(GAME_WIDTH - 150, GAME_HEIGHT - (50 + playerScores.size * 20), 150, 50 + playerScores.size * 20);
+            shapeRenderer.end();
 
-            if (character != null && !character.isAlive()) {
-                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-                shapeRenderer.setColor(0, 0, 0, 0.75f);
-                shapeRenderer.rect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-                shapeRenderer.end();
-            }
+            // chat overlay
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.setColor(0, 0, 0, 0.75f);
+            shapeRenderer.rect(0, 0, 150, GAME_HEIGHT);
+            shapeRenderer.end();
+
             Gdx.gl.glDisable(GL20.GL_BLEND);
-        }
-        Gdx.gl.glEnable(GL20.GL_BLEND);
-        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-        // scores overlay
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(0, 0, 0, 0.75f);
-        shapeRenderer.rect(GAME_WIDTH - 150, GAME_HEIGHT - (50 + playerScores.size * 20), 150, 50 + playerScores.size * 20);
-        shapeRenderer.end();
-
-        // chat overlay
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(0, 0, 0, 0.75f);
-        shapeRenderer.rect(0, 0, 150, GAME_HEIGHT);
-        shapeRenderer.end();
-
-        Gdx.gl.glDisable(GL20.GL_BLEND);
-        batch.begin();
-        font.setColor(Color.WHITE);
-        for (int i = 0; i < chat.getMessages().size; ++i) {
-            font.draw(batch, chat.getMessages().get(i), 0, 20 * (i + 1));
-        }
-
-        playerScores.sort();
-        for (int i = 0; i < playerScores.size; ++i) {
-            font.setColor(playerScores.get(i).color);
-            font.draw(batch, playerScores.get(i).name +":", GAME_WIDTH - 140, GAME_HEIGHT - 20 * (i + 1));
-            font.draw(batch, playerScores.get(i).score + "", GAME_WIDTH - 40, GAME_HEIGHT - 20 * (i + 1));
-        }
-
-        Character character = (Character) characters.get(id);
-        if (GameState.isGamePlaying && character != null && !character.isAlive()) {
-            font.draw(batch, "YOU ARE DEAD (" + Math.round(character.getSpawnTimer()) + ")", GAME_WIDTH / 2 - 65, GAME_HEIGHT / 2);
-        }
-
-        if (!GameState.isGamePlaying) {
+            batch.begin();
             font.setColor(Color.WHITE);
-            font.draw(batch, "GAME OVER", GAME_WIDTH / 2 - 40, GAME_HEIGHT / 2);
+            for (int i = 0; i < chat.getMessages().size; ++i) {
+                font.draw(batch, chat.getMessages().get(i), 0, 20 * (i + 1));
+            }
+
+            playerScores.sort();
+            for (int i = 0; i < playerScores.size; ++i) {
+                font.setColor(playerScores.get(i).color);
+                font.draw(batch, playerScores.get(i).name +":", GAME_WIDTH - 140, GAME_HEIGHT - 20 * (i + 1));
+                font.draw(batch, playerScores.get(i).score + "", GAME_WIDTH - 40, GAME_HEIGHT - 20 * (i + 1));
+            }
+
+            Character character = (Character) characters.get(id);
+            if (GameState.isGamePlaying && character != null && !character.isAlive()) {
+                font.draw(batch, "YOU ARE DEAD (" + Math.round(character.getSpawnTimer()) + ")", GAME_WIDTH / 2 - 65, GAME_HEIGHT / 2);
+            }
+
+            if (!GameState.isGamePlaying) {
+                font.setColor(Color.WHITE);
+                font.draw(batch, "GAME OVER", GAME_WIDTH / 2 - 40, GAME_HEIGHT / 2);
+            }
+            batch.end();
         }
-        batch.end();
+
+
 	}
 	
 	@Override
 	public void dispose () {
+
+        if(elapsed < 10) {
+            getScreen().dispose();
+        }
+
 		batch.dispose();
         for (Iterator ite = characters.values(); ite.hasNext();) {
             Character character = (Character) ite.next();
