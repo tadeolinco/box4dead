@@ -36,6 +36,7 @@ public class GameServer extends GameState implements Constants {
         bullets = new ObjectMap();
         zombies = new ObjectMap();
         assets = new Assets();
+        zombieSpawnRate = zombieSpawnRate / numberOfPlayers;
 
         try {
             socket = new DatagramSocket(PORT);
@@ -245,9 +246,18 @@ public class GameServer extends GameState implements Constants {
         }
         if (zombieTimer > zombieSpawnRate) {
             Zombie zombie = new Zombie();
-            zombies.put(zombie.getId(), zombie);
-            broadcast(action(ADD_ZOMBIE, payload(zombie.getId(), zombie.getX(), zombie.getY())));
-            zombieTimer = zombieTimer % zombieSpawnRate;
+            boolean overlaps = false;
+            for (Iterator ite = zombies.values(); ite.hasNext(); ) {
+                if (((Zombie) ite.next()).getBoundingRectangle().overlaps(zombie.getBoundingRectangle())) {
+                    overlaps = true;
+                    break;
+                }
+            }
+            if (!overlaps) {
+                zombies.put(zombie.getId(), zombie);
+                broadcast(action(ADD_ZOMBIE, payload(zombie.getId(), zombie.getX(), zombie.getY())));
+                zombieTimer = zombieTimer % zombieSpawnRate;
+            }
         }
 
         for (Iterator ite = zombies.values(); ite.hasNext(); ) {

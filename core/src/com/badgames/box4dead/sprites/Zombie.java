@@ -5,8 +5,15 @@ import com.badgames.box4dead.GameState;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.maps.MapObjects;
+import com.badlogic.gdx.maps.objects.RectangleMapObject;
+import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
+import com.sun.org.apache.regexp.internal.RE;
+import org.w3c.dom.css.Rect;
 
+import java.sql.Ref;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.UUID;
@@ -26,21 +33,44 @@ public class Zombie extends Sprite implements Constants {
     public Zombie() {
         this.id = UUID.randomUUID().toString();
         setColor(new Color(0.5f, 0.5f, 0.5f, 1));
+//        if (Math.random() < 0.5) {
+//            setX((float) Math.floor(Math.random() * (GAME_WIDTH - WIDTH) - WIDTH));
+//            if (getX() == -WIDTH || getX() == GAME_WIDTH) {
+//                setY((float) Math.floor(Math.random() * (GAME_HEIGHT - HEIGHT) - HEIGHT));
+//            } else {
+//                if (Math.random() < 0.5) setY(-HEIGHT);
+//                else setY(GAME_HEIGHT);
+//            }
+//        } else {
+//            setY((float) Math.floor(Math.random() * (GAME_HEIGHT - HEIGHT) - HEIGHT));
+//            if (getY() == -HEIGHT || getY() == GAME_HEIGHT) {
+//                setX((float) Math.floor(Math.random() * (GAME_WIDTH - WIDTH) - WIDTH));
+//            } else {
+//                if (Math.random() < 0.5) setX(-WIDTH);
+//                else setX(GAME_WIDTH);
+//            }
+//        }
         if (Math.random() < 0.5) {
-            setX((float) Math.floor(Math.random() * (GAME_WIDTH - WIDTH) - WIDTH));
-            if (getX() == -WIDTH || getX() == GAME_WIDTH) {
-                setY((float) Math.floor(Math.random() * (GAME_HEIGHT - HEIGHT) - HEIGHT));
+            // up or down
+            if (Math.random() < 0.5) {
+                // up
+                setX(GAME_WIDTH / 2 - WIDTH / 2);
+                setY(GAME_HEIGHT + HEIGHT);
             } else {
-                if (Math.random() < 0.5) setY(-HEIGHT);
-                else setY(GAME_HEIGHT);
+                // down
+                setX(GAME_WIDTH / 2 - WIDTH / 2);
+                setY(-HEIGHT);
             }
         } else {
-            setY((float) Math.floor(Math.random() * (GAME_HEIGHT - HEIGHT) - HEIGHT));
-            if (getY() == -HEIGHT || getY() == GAME_HEIGHT) {
-                setX((float) Math.floor(Math.random() * (GAME_WIDTH - WIDTH) - WIDTH));
+            // left or right
+            if (Math.random() < 0.5) {
+                // left
+                setX(-WIDTH);
+                setY(GAME_HEIGHT / 2 - HEIGHT / 2);
             } else {
-                if (Math.random() < 0.5) setX(-WIDTH);
-                else setX(GAME_WIDTH);
+                // right
+                setX(GAME_WIDTH + WIDTH);
+                setY(GAME_HEIGHT / 2 - HEIGHT / 2);
             }
         }
 
@@ -117,6 +147,18 @@ public class Zombie extends Sprite implements Constants {
                 if (!moveableX && !moveableY) break;
             }
         }
+
+        if (moveableX) {
+            Rectangle bounds = new Rectangle(getBoundingRectangle());
+            bounds.setX(dx);
+            if (wallCollision(bounds)) moveableX = false;
+        }
+
+        if (moveableY) {
+            Rectangle bounds = new Rectangle(getBoundingRectangle());
+            bounds.setY(dy);
+            if (wallCollision(bounds)) moveableY = false;
+        }
         if (moveableX) setX(dx);
         if (moveableY) setY(dy);
     }
@@ -179,12 +221,28 @@ public class Zombie extends Sprite implements Constants {
             }
         }
 
+        if (!overlapping && wallCollision(getBoundingRectangle())) {
+            overlapping = true;
+        }
+
         if (overlapping) {
             setX(prevX);
             setY(prevY);
             return false;
         }
         return true;
+    }
+
+    public boolean wallCollision(Rectangle bounds) {
+        MapLayer collisionObjectLayer = GameState.tiledMap.getLayers().get("Object Layer 1");
+        MapObjects objects = collisionObjectLayer.getObjects();
+        for (RectangleMapObject rectangleObject : objects.getByType(RectangleMapObject.class)) {
+            Rectangle rectangle = rectangleObject.getRectangle();
+            if (Intersector.overlaps(rectangle, bounds)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 
