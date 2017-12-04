@@ -35,5 +35,6 @@ public interface Constants {
     String KILL_ZOMBIE = "KILL_ZOMBIE";
     String CHANGE_HP_ZOMBIE = "CHANGE_HP_ZOMBIE";
 
+    String GAME_OVER = "GAME_OVER";
 
 }

@@ -207,6 +207,7 @@ public class GameServer extends GameState implements Constants {
             }
         }
 
+        boolean isAllDead = true;
         for (Iterator ite = characters.values(); ite.hasNext(); ) {
             Character character = (Character) ite.next();
             if (character.getHp() <= 0 && character.isAlive()) {
@@ -215,6 +216,9 @@ public class GameServer extends GameState implements Constants {
                 continue;
             }
 
+            if (character.isAlive()) {
+                isAllDead = false;
+            }
             if (character.handleRegen()) {
                 float hp = 1;
                 character.setHp(character.getHp() + hp);
@@ -230,6 +234,11 @@ public class GameServer extends GameState implements Constants {
                 }
             }
         }
+        if (isAllDead && characters.size != 0) {
+            GameState.isGamePlaying = false;
+            broadcast(action(GAME_OVER, payload(GameState.isGamePlaying)));
+        }
+
 
         if (numberOfPlayers == playerCount)  {
             zombieTimer += Gdx.graphics.getDeltaTime();
@@ -257,7 +266,9 @@ public class GameServer extends GameState implements Constants {
     @Override
     public void render() {
         super.render();
-        update();
+        if (GameState.isGamePlaying) {
+            update();
+        }
     }
 
     @Override
@@ -267,8 +278,7 @@ public class GameServer extends GameState implements Constants {
 
     public void broadcast(String msg){
         if (!msg.startsWith(MOVE_ZOMBIE)) {
-
-        Gdx.app.log("Broadcasting", msg);
+            Gdx.app.log("Broadcasting", msg);
         }
         for(Iterator ite = players.values(); ite.hasNext();){
             NetPlayer player = (NetPlayer) ite.next();

@@ -112,7 +112,7 @@ public class Box4Dead extends GameState implements Constants {
 
                     if (data.equals("")) continue;
 
-//                    System.out.println("Received: " + data);
+                    System.out.println("Received: " + data);
                     tokens = data.split(DELIMITER);
                     action = tokens[0];
                     payload = tokens[1];
@@ -322,18 +322,19 @@ public class Box4Dead extends GameState implements Constants {
                             }
                         });
                     }
+
+                    // expected payload: boolean
+                    if (action.equals(GAME_OVER)) {
+                        Gdx.app.postRunnable(new Runnable() {
+                            @Override
+                            public void run() {
+                                GameState.isGamePlaying = false;
+                            }
+                        });
+                    }
                 }
             }
         }).start();
-//		try {
-//		    new ChatClient();
-//        } catch(IOException e) {
-//			try {
-//				Gdx.app.log("GameServer", "You are the server");
-//				new ChatServer();
-//				new ChatClient();
-//			}catch (IOException ex){}
-//        }
 	}
 
     public void update() {
@@ -353,25 +354,26 @@ public class Box4Dead extends GameState implements Constants {
            }, "Chat Message", "", "");
        }
 
-
-	    Character character = (Character) characters.get(id);
-        if (character != null && character.isAlive()) {
-            boolean hasMoved = character.handleMove();
-             if (hasMoved) {
-                send(action(MOVE_PLAYER, payload(character.getId(), character.getX(), character.getY(), character.getFacing())));
+        if (GameState.isGamePlaying) {
+            Character character = (Character) characters.get(id);
+            if (character != null && character.isAlive()) {
+                boolean hasMoved = character.handleMove();
+                 if (hasMoved) {
+                    send(action(MOVE_PLAYER, payload(character.getId(), character.getX(), character.getY(), character.getFacing())));
+                }
+                if (character.handleShoot()) {
+                    float x = character.getX() + Character.WIDTH / 2 - Bullet.WIDTH / 2;
+                    float y = character.getY() + Character.HEIGHT / 2 - Bullet.HEIGHT / 2;
+                    send(action(ADD_BULLET, payload(character.getId(), x, y, character.getFacing())));
+                }
             }
-            if (character.handleShoot()) {
-                float x = character.getX() + Character.WIDTH / 2 - Bullet.WIDTH / 2;
-                float y = character.getY() + Character.HEIGHT / 2 - Bullet.HEIGHT / 2;
-                send(action(ADD_BULLET, payload(character.getId(), x, y, character.getFacing())));
-            }
-        }
 
-        for (Iterator ite = effects.iterator(); ite.hasNext(); ) {
-            Effect effect = (Effect) ite.next();
-            effect.update();
-            if (effect.getTimer() < 0) {
-                effects.removeValue(effect, false);
+            for (Iterator ite = effects.iterator(); ite.hasNext(); ) {
+                Effect effect = (Effect) ite.next();
+                effect.update();
+                if (effect.getTimer() < 0) {
+                    effects.removeValue(effect, false);
+                }
             }
         }
     }
@@ -381,83 +383,105 @@ public class Box4Dead extends GameState implements Constants {
 	    playerScores.clear();
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        tiledMapRenderer.setView(camera);
-        tiledMapRenderer.render();
-		camera.update();
-		batch.setProjectionMatrix(camera.combined);
+        camera.update();
         update();
-
+        batch.setProjectionMatrix(camera.combined);
         shapeRenderer.setProjectionMatrix(camera.combined);
-
-        for (Iterator ite = effects.iterator(); ite.hasNext(); ) {
-            Effect effect = (Effect) ite.next();
-            effect.draw(shapeRenderer);
-        }
-
-
-        for (Iterator ite = zombies.values(); ite.hasNext(); ) {
-            Zombie zombie = (Zombie) ite.next();
-            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-            shapeRenderer.setColor(zombie.getColor());
-            shapeRenderer.rect(zombie.getX(), zombie.getY(), zombie.getWidth(), zombie.getHeight());
-            shapeRenderer.end();
-        }
 
 
         for (Iterator ite = characters.values(); ite.hasNext();) {
             Character character = (Character) ite.next();
-            if (character.getId().equals(id)) continue;
-            if (character.isAlive()) {
-                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-                shapeRenderer.setColor(character.getColor());
-
-                shapeRenderer.rect(character.getX(), character.getY(), character.getWidth(), character.getHeight());
-                shapeRenderer.end();
-
-                float hpPercent = character.getHp() / 100;
-                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-                if (hpPercent < 0.3f) shapeRenderer.setColor(Color.RED);
-                else if (hpPercent < 0.5f) shapeRenderer.setColor(Color.ORANGE);
-                else shapeRenderer.setColor(Color.GREEN);
-                shapeRenderer.rect(character.getX(), character.getY() + character.getHeight() + 10, hpPercent * character.getWidth(), 5f);
-                shapeRenderer.end();
-            }
-
             playerScores.add(new PlayerScore(character.getName(), character.getScore(), character.getColor()));
         }
 
-        Character character = (Character) characters.get(id);
-        if (character != null)  {
-            if (character.isAlive()) {
-                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-                shapeRenderer.setColor(character.getColor());
+        if (GameState.isGamePlaying) {
 
-                shapeRenderer.rect(character.getX(), character.getY(), character.getWidth(), character.getHeight());
-                shapeRenderer.end();
+            tiledMapRenderer.setView(camera);
+            tiledMapRenderer.render();
 
-                float hpPercent = character.getHp() / 100;
+            for (Iterator ite = effects.iterator(); ite.hasNext(); ) {
+                Effect effect = (Effect) ite.next();
+                effect.draw(shapeRenderer);
+            }
+
+
+            for (Iterator ite = zombies.values(); ite.hasNext(); ) {
+                Zombie zombie = (Zombie) ite.next();
                 shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-                if (hpPercent < 0.3f) shapeRenderer.setColor(Color.RED);
-                else if (hpPercent < 0.5f) shapeRenderer.setColor(Color.ORANGE);
-                else shapeRenderer.setColor(Color.GREEN);
-                shapeRenderer.rect(character.getX(), character.getY() + character.getHeight() + 10, hpPercent * character.getWidth(), 5f);
+                shapeRenderer.setColor(zombie.getColor());
+                shapeRenderer.rect(zombie.getX(), zombie.getY(), zombie.getWidth(), zombie.getHeight());
                 shapeRenderer.end();
             }
 
-            playerScores.add(new PlayerScore(character.getName(), character.getScore(), character.getColor()));
-        }
+
+            for (Iterator ite = characters.values(); ite.hasNext();) {
+                Character character = (Character) ite.next();
+                if (character.getId().equals(id)) continue;
+                if (character.isAlive()) {
+                    shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                    shapeRenderer.setColor(character.getColor());
+
+                    shapeRenderer.rect(character.getX(), character.getY(), character.getWidth(), character.getHeight());
+                    shapeRenderer.end();
+
+                    float hpPercent = character.getHp() / 100;
+                    shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                    if (hpPercent < 0.3f) shapeRenderer.setColor(Color.RED);
+                    else if (hpPercent < 0.5f) shapeRenderer.setColor(Color.ORANGE);
+                    else shapeRenderer.setColor(Color.GREEN);
+                    shapeRenderer.rect(character.getX(), character.getY() + character.getHeight() + 10, hpPercent * character.getWidth(), 5f);
+                    shapeRenderer.end();
+                }
+            }
 
 
-        for (Iterator ite = bullets.values(); ite.hasNext();) {
-            Bullet bullet = (Bullet) ite.next();
-            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-            shapeRenderer.setColor(bullet.getColor());
-            shapeRenderer.rect(bullet.getX(), bullet.getY(), bullet.getWidth(), bullet.getHeight());
-            shapeRenderer.end();
+            // make sure to render own character above everyone else's
+            Character character = (Character) characters.get(id);
+            if (character != null)  {
+                if (character.isAlive()) {
+                    shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                    shapeRenderer.setColor(character.getColor());
+
+                    shapeRenderer.rect(character.getX(), character.getY(), character.getWidth(), character.getHeight());
+                    shapeRenderer.end();
+
+                    float hpPercent = character.getHp() / 100;
+                    shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                    if (hpPercent < 0.3f) shapeRenderer.setColor(Color.RED);
+                    else if (hpPercent < 0.5f) shapeRenderer.setColor(Color.ORANGE);
+                    else shapeRenderer.setColor(Color.GREEN);
+                    shapeRenderer.rect(character.getX(), character.getY() + character.getHeight() + 10, hpPercent * character.getWidth(), 5f);
+                    shapeRenderer.end();
+                }
+            }
+
+
+
+
+            for (Iterator ite = bullets.values(); ite.hasNext();) {
+                Bullet bullet = (Bullet) ite.next();
+                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                shapeRenderer.setColor(bullet.getColor());
+                shapeRenderer.rect(bullet.getX(), bullet.getY(), bullet.getWidth(), bullet.getHeight());
+                shapeRenderer.end();
+            }
+
+            // death overlay
+
+            Gdx.gl.glEnable(GL20.GL_BLEND);
+            Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+            if (character != null && !character.isAlive()) {
+                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                shapeRenderer.setColor(0, 0, 0, 0.75f);
+                shapeRenderer.rect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+                shapeRenderer.end();
+            }
+            Gdx.gl.glDisable(GL20.GL_BLEND);
         }
-        // scores overlay
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        // scores overlay
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(0, 0, 0, 0.75f);
         shapeRenderer.rect(GAME_WIDTH - 150, GAME_HEIGHT - (50 + playerScores.size * 20), 150, 50 + playerScores.size * 20);
@@ -469,15 +493,7 @@ public class Box4Dead extends GameState implements Constants {
         shapeRenderer.rect(0, 0, 150, GAME_HEIGHT);
         shapeRenderer.end();
 
-        // death overlay
-        if (character != null && !character.isAlive()) {
-            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-            shapeRenderer.setColor(0, 0, 0, 0.75f);
-            shapeRenderer.rect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-            shapeRenderer.end();
-        }
         Gdx.gl.glDisable(GL20.GL_BLEND);
-
         batch.begin();
         font.setColor(Color.WHITE);
         for (int i = 0; i < chat.getMessages().size; ++i) {
@@ -491,9 +507,14 @@ public class Box4Dead extends GameState implements Constants {
             font.draw(batch, playerScores.get(i).score + "", GAME_WIDTH - 40, GAME_HEIGHT - 20 * (i + 1));
         }
 
-
-        if (character != null && !character.isAlive()) {
+        Character character = (Character) characters.get(id);
+        if (GameState.isGamePlaying && character != null && !character.isAlive()) {
             font.draw(batch, "YOU ARE DEAD (" + Math.round(character.getSpawnTimer()) + ")", GAME_WIDTH / 2 - 65, GAME_HEIGHT / 2);
+        }
+
+        if (!GameState.isGamePlaying) {
+            font.setColor(Color.WHITE);
+            font.draw(batch, "GAME OVER", GAME_WIDTH / 2 - 40, GAME_HEIGHT / 2);
         }
         batch.end();
 	}
