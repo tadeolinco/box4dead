@@ -1,5 +1,6 @@
 package com.badgames.box4dead;
 
+import com.badgames.box4dead.chat.ChatClient;
 import com.badgames.box4dead.effects.Effect;
 import com.badgames.box4dead.effects.DeathEffect;
 import com.badgames.box4dead.sprites.Bullet;
@@ -7,6 +8,7 @@ import com.badgames.box4dead.sprites.Character;
 import com.badgames.box4dead.sprites.Zombie;
 import com.badgames.box4dead.util.PlayerScore;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -16,6 +18,8 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import sun.security.provider.SHA;
@@ -45,6 +49,7 @@ public class Box4Dead extends GameState implements Constants {
     private Assets assets;
     private OrthographicCamera camera;
     private Array<Effect> effects;
+    private ChatClient chat;
 
 
 	public Box4Dead(String server, String name) {
@@ -64,6 +69,11 @@ public class Box4Dead extends GameState implements Constants {
         assets = new Assets();
         effects = new Array<Effect>();
         playerScores = new Array<PlayerScore>();
+        try {
+            chat = new ChatClient(server, name);
+        } catch (IOException io) {
+            System.out.println("error in initializing chat");
+        }
 	}
 
 
@@ -78,6 +88,7 @@ public class Box4Dead extends GameState implements Constants {
         tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
         font = new BitmapFont();
         shapeRenderer = new ShapeRenderer();
+
 
 		new Thread(new Runnable() {
             @Override
@@ -101,7 +112,7 @@ public class Box4Dead extends GameState implements Constants {
 
                     if (data.equals("")) continue;
 
-                    System.out.println("Received: " + data);
+//                    System.out.println("Received: " + data);
                     tokens = data.split(DELIMITER);
                     action = tokens[0];
                     payload = tokens[1];
@@ -326,6 +337,23 @@ public class Box4Dead extends GameState implements Constants {
 	}
 
     public void update() {
+	   if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+	       Gdx.input.getTextInput(new Input.TextInputListener() {
+               @Override
+               public void input(String text) {
+                   if (chat != null) {
+                       chat.setMessage(text);
+                   }
+               }
+
+               @Override
+               public void canceled() {
+
+               }
+           }, "Chat Message", "", "");
+       }
+
+
 	    Character character = (Character) characters.get(id);
         if (character != null && character.isAlive()) {
             boolean hasMoved = character.handleMove();
@@ -427,6 +455,7 @@ public class Box4Dead extends GameState implements Constants {
             shapeRenderer.rect(bullet.getX(), bullet.getY(), bullet.getWidth(), bullet.getHeight());
             shapeRenderer.end();
         }
+        // scores overlay
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
@@ -434,6 +463,13 @@ public class Box4Dead extends GameState implements Constants {
         shapeRenderer.rect(GAME_WIDTH - 150, GAME_HEIGHT - (50 + playerScores.size * 20), 150, 50 + playerScores.size * 20);
         shapeRenderer.end();
 
+        // chat overlay
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(0, 0, 0, 0.75f);
+        shapeRenderer.rect(0, 0, 150, GAME_HEIGHT);
+        shapeRenderer.end();
+
+        // death overlay
         if (character != null && !character.isAlive()) {
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
             shapeRenderer.setColor(0, 0, 0, 0.75f);
@@ -443,6 +479,10 @@ public class Box4Dead extends GameState implements Constants {
         Gdx.gl.glDisable(GL20.GL_BLEND);
 
         batch.begin();
+        font.setColor(Color.WHITE);
+        for (int i = 0; i < chat.getMessages().size; ++i) {
+            font.draw(batch, chat.getMessages().get(i), 0, 20 * (i + 1));
+        }
 
         playerScores.sort();
         for (int i = 0; i < playerScores.size; ++i) {
@@ -455,7 +495,6 @@ public class Box4Dead extends GameState implements Constants {
         if (character != null && !character.isAlive()) {
             font.draw(batch, "YOU ARE DEAD (" + Math.round(character.getSpawnTimer()) + ")", GAME_WIDTH / 2 - 65, GAME_HEIGHT / 2);
         }
-
         batch.end();
 	}
 	

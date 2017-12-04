@@ -1,9 +1,11 @@
 package com.badgames.box4dead;
 
+import com.badgames.box4dead.chat.ChatServer;
 import com.badgames.box4dead.sprites.Bullet;
 import com.badgames.box4dead.sprites.Character;
 import com.badgames.box4dead.sprites.Zombie;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.utils.ObjectMap;
 
@@ -47,6 +49,9 @@ public class GameServer extends GameState implements Constants {
 
     @Override
     public void create() {
+        try {
+            new ChatServer();
+        } catch (IOException e) {}
         assets.load();
         assets.getManager().finishLoading();
         tiledMap = new TmxMapLoader().load("map/gameMap.tmx");

@@ -1,5 +1,6 @@
 package com.badgames.box4dead.chat;
 
+import com.badgames.box4dead.Constants;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Net;
 import com.badlogic.gdx.utils.Array;
@@ -9,7 +10,7 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class ChatServer {
+public class ChatServer implements Constants {
     private ServerSocket server;
 
     private Array<Client> clients;
@@ -17,7 +18,7 @@ public class ChatServer {
 
     public ChatServer() throws IOException {
         try {
-            server = new ServerSocket(9999);
+            server = new ServerSocket(PORT - 1);
             clients = new Array<Client>();
 
             new Thread(new Runnable() {
