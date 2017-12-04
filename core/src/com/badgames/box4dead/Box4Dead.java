@@ -112,7 +112,7 @@ public class Box4Dead extends GameState implements Constants {
 
                     if (data.equals("")) continue;
 
-                    System.out.println("Received: " + data);
+//                    System.out.println("Received: " + data);
                     tokens = data.split(DELIMITER);
                     action = tokens[0];
                     payload = tokens[1];

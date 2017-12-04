@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" tiledversion="1.0.3" orientation="orthogonal" renderorder="right-down" width="32" height="26" tilewidth="32" tileheight="28" nextobjectid="39">
+ <properties>
+  <property name="blocked" value="t"/>
+ </properties>
+ <tileset firstgid="1" name="game tiles" tilewidth="32" tileheight="28" tilecount="220" columns="20">
+  <image source="master-tileset.png" width="640" height="320"/>
+ </tileset>
+ <tileset firstgid="221" source="test.tsx"/>
+ <tileset firstgid="421" source="obstacles.tsx"/>
+ <layer name="Tile Layer 1" width="32" height="26">
+  <properties>
+   <property name="blocked" value=""/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJztlj0OgCAMRqmLzk100SvrHfSk1qEJltaGRFhg+PIGftqXAAFCCAMFDO6UIyJSJhocISUq8619mTNl+eBJuSI+NTZavEJKVOZ7+1ueFnP9LUp/2bfFXH+Llr/m9Sc9f83rT3b/t788l7X8mdxPbX8mipT2l/VK+3os7euxdf/a50HWa/3+Q+Pvf/fv/7+W//83EVGUcQ==
+  </data>
+ </layer>
+ <layer name="Tile Layer 2" width="32" height="26">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo2AUjALiwGZGCCZWfLjZP9LARmCYbiIjXMnVhw4OAs04RIY55OobBfjBQOe/gbZ/FIyCUTB8AAAniREV
+  </data>
+ </layer>
+ <objectgroup name="Object Layer 1">
+  <object id="1" x="1" y="2" width="412" height="107">
+   <properties>
+    <property name="blocked" value=""/>
+   </properties>
+  </object>
+  <object id="4" x="2" y="115" width="126" height="191">
+   <properties>
+    <property name="blocked" value=""/>
+   </properties>
+  </object>
+  <object id="5" x="609" y="-1" width="414" height="111">
+   <properties>
+    <property name="blocked" value=""/>
+   </properties>
+  </object>
+  <object id="7" x="900" y="113" width="125" height="189">
+   <properties>
+    <property name="blocked" value=""/>
+   </properties>
+  </object>
+  <object id="8" x="1" y="616" width="414" height="111">
+   <properties>
+    <property name="blocked" value=""/>
+   </properties>
+  </object>
+  <object id="9" x="1" y="424" width="126" height="188">
+   <properties>
+    <property name="blocked" value=""/>
+   </properties>
+  </object>
+  <object id="10" x="611" y="616" width="412" height="114">
+   <properties>
+    <property name="blocked" value=""/>
+   </properties>
+  </object>
+  <object id="11" x="895" y="421" width="129" height="193">
+   <properties>
+    <property name="blocked" value=""/>
+   </properties>
+  </object>
+  <object id="25" x="382" y="223" width="65" height="54"/>
+  <object id="28" x="576.5" y="225.5" width="63" height="54.5"/>
+  <object id="31" x="705.5" y="336.5" width="59" height="51.5"/>
+  <object id="33" x="578" y="449" width="61" height="52.5"/>
+  <object id="34" x="386" y="449.75" width="63" height="53"/>
+  <object id="35" x="257.5" y="337.25" width="62.5" height="53"/>
+  <object id="38" x="705.5" y="336.5" width="59" height="51.5"/>
+ </objectgroup>
+</map>

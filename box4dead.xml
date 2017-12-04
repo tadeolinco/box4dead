@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="box4dead" default="all">
+  
+  
+  <property file="box4dead.properties"/>
+  <!-- Uncomment the following property if no tests compilation is needed -->
+  <!-- 
+  <property name="skip.tests" value="true"/>
+   -->
+  
+  <!-- Compiler options -->
+  
+  <property name="compiler.debug" value="on"/>
+  <property name="compiler.generate.no.warnings" value="off"/>
+  <property name="compiler.args" value=""/>
+  <property name="compiler.max.memory" value="700m"/>
+  <patternset id="ignored.files">
+    <exclude name="**/*.hprof/**"/>
+    <exclude name="**/*.pyc/**"/>
+    <exclude name="**/*.pyo/**"/>
+    <exclude name="**/*.rbc/**"/>
+    <exclude name="**/*.yarb/**"/>
+    <exclude name="**/*~/**"/>
+    <exclude name="**/.DS_Store/**"/>
+    <exclude name="**/.git/**"/>
+    <exclude name="**/.hg/**"/>
+    <exclude name="**/.svn/**"/>
+    <exclude name="**/CVS/**"/>
+    <exclude name="**/__pycache__/**"/>
+    <exclude name="**/_svn/**"/>
+    <exclude name="**/vssver.scc/**"/>
+    <exclude name="**/vssver2.scc/**"/>
+  </patternset>
+  <patternset id="library.patterns">
+    <include name="*.war"/>
+    <include name="*.swc"/>
+    <include name="*.zip"/>
+    <include name="*.egg"/>
+    <include name="*.ane"/>
+    <include name="*.jar"/>
+    <include name="*.ear"/>
+  </patternset>
+  <patternset id="compiler.resources">
+    <exclude name="**/?*.java"/>
+    <exclude name="**/?*.form"/>
+    <exclude name="**/?*.class"/>
+    <exclude name="**/?*.groovy"/>
+    <exclude name="**/?*.scala"/>
+    <exclude name="**/?*.flex"/>
+    <exclude name="**/?*.kt"/>
+    <exclude name="**/?*.clj"/>
+    <exclude name="**/?*.aj"/>
+  </patternset>
+  
+  <!-- JDK definitions -->
+  
+  <property name="jdk.bin.1.8" value="${jdk.home.1.8}/bin"/>
+  <path id="jdk.classpath.1.8">
+    <fileset dir="${jdk.home.1.8}">
+      <include name="../java-1.8.0-openjdk-amd64/jre/lib/charsets.jar"/>
+      <include name="../java-1.8.0-openjdk-amd64/jre/lib/ext/cldrdata.jar"/>
+      <include name="../java-1.8.0-openjdk-amd64/jre/lib/ext/dnsns.jar"/>
+      <include name="../java-1.8.0-openjdk-amd64/jre/lib/ext/icedtea-sound.jar"/>
+      <include name="../java-1.8.0-openjdk-amd64/jre/lib/ext/jaccess.jar"/>
+      <include name="../java-1.8.0-openjdk-amd64/jre/lib/ext/java-atk-wrapper.jar"/>
+      <include name="../java-1.8.0-openjdk-amd64/jre/lib/ext/localedata.jar"/>
+      <include name="../java-1.8.0-openjdk-amd64/jre/lib/ext/nashorn.jar"/>
+      <include name="../java-1.8.0-openjdk-amd64/jre/lib/ext/sunec.jar"/>
+      <include name="../java-1.8.0-openjdk-amd64/jre/lib/ext/sunjce_provider.jar"/>
+      <include name="../java-1.8.0-openjdk-amd64/jre/lib/ext/sunpkcs11.jar"/>
+      <include name="../java-1.8.0-openjdk-amd64/jre/lib/ext/zipfs.jar"/>
+      <include name="../java-1.8.0-openjdk-amd64/jre/lib/jce.jar"/>
+      <include name="../java-1.8.0-openjdk-amd64/jre/lib/jsse.jar"/>
+      <include name="../java-1.8.0-openjdk-amd64/jre/lib/management-agent.jar"/>
+      <include name="../java-1.8.0-openjdk-amd64/jre/lib/resources.jar"/>
+      <include name="../java-1.8.0-openjdk-amd64/jre/lib/rt.jar"/>
+    </fileset>
+  </path>
+  
+  <property name="project.jdk.home" value="${jdk.home.1.8}"/>
+  <property name="project.jdk.bin" value="${jdk.bin.1.8}"/>
+  <property name="project.jdk.classpath" value="jdk.classpath.1.8"/>
+  
+  
+  <!-- Project Libraries -->
+  
+  <path id="library.gradle:_com.badlogicgames.gdx:gdx-backend-lwjgl:1.9.7.classpath">
+    <pathelement location="${basedir}/../../.gradle/caches/modules-2/files-2.1/com.badlogicgames.gdx/gdx-backend-lwjgl/1.9.7/190d35bca4b85498c3d942e0948ba97031b45e92/gdx-backend-lwjgl-1.9.7.jar"/>
+  </path>
+  
+  <path id="library.gradle:_com.badlogicgames.gdx:gdx-platform:natives-desktop:1.9.7.classpath">
+    <pathelement location="${basedir}/../../.gradle/caches/modules-2/files-2.1/com.badlogicgames.gdx/gdx-platform/1.9.7/707c360720b430f6c6a38cf1fa45e45169cb4f9e/gdx-platform-1.9.7-natives-desktop.jar"/>
+  </path>
+  
+  <path id="library.gradle:_com.badlogicgames.gdx:gdx:1.9.7.classpath">
+    <pathelement location="${basedir}/../../.gradle/caches/modules-2/files-2.1/com.badlogicgames.gdx/gdx/1.9.7/8a021ba0bb6555c25dfc272697d379215aa05ed1/gdx-1.9.7.jar"/>
+  </path>
+  
+  <path id="library.gradle:_com.badlogicgames.jlayer:jlayer:1.0.1-gdx.classpath">
+    <pathelement location="${basedir}/../../.gradle/caches/modules-2/files-2.1/com.badlogicgames.jlayer/jlayer/1.0.1-gdx/7cca83cec5c1b2f011362f4d85aabd71a73b049d/jlayer-1.0.1-gdx.jar"/>
+  </path>
+  
+  <path id="library.gradle:_net.java.jinput:jinput-platform:natives-linux:2.0.5.classpath">
+    <pathelement location="${basedir}/../../.gradle/caches/modules-2/files-2.1/net.java.jinput/jinput-platform/2.0.5/7ff832a6eb9ab6a767f1ade2b548092d0fa64795/jinput-platform-2.0.5-natives-linux.jar"/>
+  </path>
+  
+  <path id="library.gradle:_net.java.jinput:jinput-platform:natives-osx:2.0.5.classpath">
+    <pathelement location="${basedir}/../../.gradle/caches/modules-2/files-2.1/net.java.jinput/jinput-platform/2.0.5/53f9c919f34d2ca9de8c51fc4e1e8282029a9232/jinput-platform-2.0.5-natives-osx.jar"/>
+  </path>
+  
+  <path id="library.gradle:_net.java.jinput:jinput-platform:natives-windows:2.0.5.classpath">
+    <pathelement location="${basedir}/../../.gradle/caches/modules-2/files-2.1/net.java.jinput/jinput-platform/2.0.5/385ee093e01f587f30ee1c8a2ee7d408fd732e16/jinput-platform-2.0.5-natives-windows.jar"/>
+  </path>
+  
+  <path id="library.gradle:_net.java.jinput:jinput:2.0.5.classpath">
+    <pathelement location="${basedir}/../../.gradle/caches/modules-2/files-2.1/net.java.jinput/jinput/2.0.5/39c7796b469a600f72380316f6b1f11db6c2c7c4/jinput-2.0.5.jar"/>
+  </path>
+  
+  <path id="library.gradle:_net.java.jutils:jutils:1.0.0.classpath">
+    <pathelement location="${basedir}/../../.gradle/caches/modules-2/files-2.1/net.java.jutils/jutils/1.0.0/e12fe1fda814bd348c1579329c86943d2cd3c6a6/jutils-1.0.0.jar"/>
+  </path>
+  
+  <path id="library.gradle:_org.jcraft:jorbis:0.0.17.classpath">
+    <pathelement location="${basedir}/../../.gradle/caches/modules-2/files-2.1/org.jcraft/jorbis/0.0.17/8872d22b293e8f5d7d56ff92be966e6dc28ebdc6/jorbis-0.0.17.jar"/>
+  </path>
+  
+  <path id="library.gradle:_org.lwjgl.lwjgl:lwjgl-platform:natives-linux:2.9.2.classpath">
+    <pathelement location="${basedir}/../../.gradle/caches/modules-2/files-2.1/org.lwjgl.lwjgl/lwjgl-platform/2.9.2/d276cdf61fe2b516c7b7f4aa1b8dea91dbdc8d56/lwjgl-platform-2.9.2-natives-linux.jar"/>
+  </path>
+  
+  <path id="library.gradle:_org.lwjgl.lwjgl:lwjgl-platform:natives-osx:2.9.2.classpath">
+    <pathelement location="${basedir}/../../.gradle/caches/modules-2/files-2.1/org.lwjgl.lwjgl/lwjgl-platform/2.9.2/d55b46b40b40249d627a83a7f7f22649709d70c3/lwjgl-platform-2.9.2-natives-osx.jar"/>
+  </path>
+  
+  <path id="library.gradle:_org.lwjgl.lwjgl:lwjgl-platform:natives-windows:2.9.2.classpath">
+    <pathelement location="${basedir}/../../.gradle/caches/modules-2/files-2.1/org.lwjgl.lwjgl/lwjgl-platform/2.9.2/510c7d317f5e9e700b9cfaac5fd38bdebf0702e0/lwjgl-platform-2.9.2-natives-windows.jar"/>
+  </path>
+  
+  <path id="library.gradle:_org.lwjgl.lwjgl:lwjgl:2.9.2.classpath">
+    <pathelement location="${basedir}/../../.gradle/caches/modules-2/files-2.1/org.lwjgl.lwjgl/lwjgl/2.9.2/a9d80fe5935c7a9149f6584d9777cfd471f65489/lwjgl-2.9.2.jar"/>
+  </path>
+  
+  <path id="library.gradle:_org.lwjgl.lwjgl:lwjgl_util:2.9.2.classpath">
+    <pathelement location="${basedir}/../../.gradle/caches/modules-2/files-2.1/org.lwjgl.lwjgl/lwjgl_util/2.9.2/4b9e37300a87799856e0bd15ed81663cdb6b0947/lwjgl_util-2.9.2.jar"/>
+  </path>
+  <!-- Register Custom Compiler Taskdefs -->
+  <property name="javac2.home" value="${idea.home}/lib"/>
+  <path id="javac2.classpath">
+    <pathelement location="${javac2.home}/javac2.jar"/>
+    <pathelement location="${javac2.home}/jdom.jar"/>
+    <pathelement location="${javac2.home}/asm-all.jar"/>
+    <pathelement location="${javac2.home}/jgoodies-forms.jar"/>
+  </path>
+  <target name="register.custom.compilers">
+    <taskdef name="javac2" classname="com.intellij.ant.Javac2" classpathref="javac2.classpath"/>
+    <taskdef name="instrumentIdeaExtensions" classname="com.intellij.ant.InstrumentIdeaExtensions" classpathref="javac2.classpath"/>
+  </target>
+  
+  <!-- Modules -->
+  
+  <import file="${basedir}/module_box4dead.xml"/>
+  
+  <import file="${basedir}/.idea/modules/core/module_core.xml"/>
+  
+  <import file="${basedir}/.idea/modules/core/module_core_main.xml"/>
+  
+  <import file="${basedir}/.idea/modules/desktop/module_desktop.xml"/>
+  
+  <import file="${basedir}/.idea/modules/core/module_core_test.xml"/>
+  
+  <import file="${basedir}/.idea/modules/desktop/module_desktop_main.xml"/>
+  
+  <import file="${basedir}/.idea/modules/desktop/module_desktop_test.xml"/>
+  
+  <target name="init" description="Build initialization">
+    <!-- Perform any build initialization in this target -->
+  </target>
+  
+  <target name="clean" depends="clean.module.box4dead, clean.module.core, clean.module.core_main, clean.module.desktop, clean.module.core_test, clean.module.desktop_main, clean.module.desktop_test" description="cleanup all"/>
+  
+  <target name="build.modules" depends="init, clean, compile.module.box4dead, compile.module.core, compile.module.core_main, compile.module.desktop, compile.module.core_test, compile.module.desktop_main, compile.module.desktop_test" description="build all modules"/>
+  
+  <target name="init.artifacts">
+    <property name="artifacts.temp.dir" value="${basedir}/__artifacts_temp"/>
+    <property name="artifact.output.desktop_main:jar" value="${basedir}/classes/artifacts/desktop_main_jar"/>
+    <mkdir dir="${artifacts.temp.dir}"/>
+    <property name="temp.jar.path.desktop_main.jar" value="${artifacts.temp.dir}/desktop_main.jar"/>
+  </target>
+  
+  <target name="artifact.desktop_main:jar" depends="init.artifacts, compile.module.desktop_main, compile.module.core_main" description="Build &#39;desktop_main:jar&#39; artifact">
+    <property name="artifact.temp.output.desktop_main:jar" value="${artifacts.temp.dir}/desktop_main_jar"/>
+    <mkdir dir="${artifact.temp.output.desktop_main:jar}"/>
+    <jar destfile="${temp.jar.path.desktop_main.jar}" duplicate="preserve" filesetmanifest="mergewithoutmain">
+      <zipfileset file="${basedir}/desktop/src/main/resources/META-INF/MANIFEST.MF" prefix="META-INF"/>
+      <zipfileset dir="${desktop_main.output.dir}"/>
+      <zipfileset dir="${core_main.output.dir}"/>
+      <zipfileset src="${basedir}/../../.gradle/caches/modules-2/files-2.1/org.lwjgl.lwjgl/lwjgl-platform/2.9.2/510c7d317f5e9e700b9cfaac5fd38bdebf0702e0/lwjgl-platform-2.9.2-natives-windows.jar"/>
+      <zipfileset src="${basedir}/../../.gradle/caches/modules-2/files-2.1/org.lwjgl.lwjgl/lwjgl/2.9.2/a9d80fe5935c7a9149f6584d9777cfd471f65489/lwjgl-2.9.2.jar"/>
+      <zipfileset src="${basedir}/../../.gradle/caches/modules-2/files-2.1/org.lwjgl.lwjgl/lwjgl-platform/2.9.2/d276cdf61fe2b516c7b7f4aa1b8dea91dbdc8d56/lwjgl-platform-2.9.2-natives-linux.jar"/>
+      <zipfileset src="${basedir}/../../.gradle/caches/modules-2/files-2.1/net.java.jinput/jinput-platform/2.0.5/385ee093e01f587f30ee1c8a2ee7d408fd732e16/jinput-platform-2.0.5-natives-windows.jar"/>
+      <zipfileset src="${basedir}/../../.gradle/caches/modules-2/files-2.1/com.badlogicgames.gdx/gdx/1.9.7/8a021ba0bb6555c25dfc272697d379215aa05ed1/gdx-1.9.7.jar"/>
+      <zipfileset src="${basedir}/../../.gradle/caches/modules-2/files-2.1/org.lwjgl.lwjgl/lwjgl_util/2.9.2/4b9e37300a87799856e0bd15ed81663cdb6b0947/lwjgl_util-2.9.2.jar"/>
+      <zipfileset src="${basedir}/../../.gradle/caches/modules-2/files-2.1/net.java.jinput/jinput-platform/2.0.5/53f9c919f34d2ca9de8c51fc4e1e8282029a9232/jinput-platform-2.0.5-natives-osx.jar"/>
+      <zipfileset src="${basedir}/../../.gradle/caches/modules-2/files-2.1/com.badlogicgames.gdx/gdx-backend-lwjgl/1.9.7/190d35bca4b85498c3d942e0948ba97031b45e92/gdx-backend-lwjgl-1.9.7.jar"/>
+      <zipfileset src="${basedir}/../../.gradle/caches/modules-2/files-2.1/net.java.jinput/jinput-platform/2.0.5/7ff832a6eb9ab6a767f1ade2b548092d0fa64795/jinput-platform-2.0.5-natives-linux.jar"/>
+      <zipfileset src="${basedir}/../../.gradle/caches/modules-2/files-2.1/org.lwjgl.lwjgl/lwjgl-platform/2.9.2/d55b46b40b40249d627a83a7f7f22649709d70c3/lwjgl-platform-2.9.2-natives-osx.jar"/>
+      <zipfileset src="${basedir}/../../.gradle/caches/modules-2/files-2.1/com.badlogicgames.gdx/gdx-platform/1.9.7/707c360720b430f6c6a38cf1fa45e45169cb4f9e/gdx-platform-1.9.7-natives-desktop.jar"/>
+      <zipfileset src="${basedir}/../../.gradle/caches/modules-2/files-2.1/net.java.jinput/jinput/2.0.5/39c7796b469a600f72380316f6b1f11db6c2c7c4/jinput-2.0.5.jar"/>
+      <zipfileset src="${basedir}/../../.gradle/caches/modules-2/files-2.1/net.java.jutils/jutils/1.0.0/e12fe1fda814bd348c1579329c86943d2cd3c6a6/jutils-1.0.0.jar"/>
+      <zipfileset src="${basedir}/../../.gradle/caches/modules-2/files-2.1/org.jcraft/jorbis/0.0.17/8872d22b293e8f5d7d56ff92be966e6dc28ebdc6/jorbis-0.0.17.jar"/>
+      <zipfileset src="${basedir}/../../.gradle/caches/modules-2/files-2.1/com.badlogicgames.jlayer/jlayer/1.0.1-gdx/7cca83cec5c1b2f011362f4d85aabd71a73b049d/jlayer-1.0.1-gdx.jar"/>
+    </jar>
+    <copy file="${temp.jar.path.desktop_main.jar}" tofile="${artifact.temp.output.desktop_main:jar}/desktop_main.jar"/>
+  </target>
+  
+  <target name="build.all.artifacts" depends="artifact.desktop_main:jar" description="Build all artifacts">
+    <mkdir dir="${artifact.output.desktop_main:jar}"/>
+    <copy todir="${artifact.output.desktop_main:jar}">
+      <fileset dir="${artifact.temp.output.desktop_main:jar}"/>
+    </copy>
+    
+    <!-- Delete temporary files -->
+    <delete dir="${artifacts.temp.dir}"/>
+  </target>
+  
+  <target name="all" depends="build.modules, build.all.artifacts" description="build all"/>
+</project>

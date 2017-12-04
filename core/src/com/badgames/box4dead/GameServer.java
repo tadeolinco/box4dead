@@ -287,9 +287,6 @@ public class GameServer extends GameState implements Constants {
     }
 
     public void broadcast(String msg){
-        if (!msg.startsWith(MOVE_ZOMBIE)) {
-            Gdx.app.log("Broadcasting", msg);
-        }
         for(Iterator ite = players.values(); ite.hasNext();){
             NetPlayer player = (NetPlayer) ite.next();
             send(player, msg);

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_box4dead" default="compile.module.box4dead">
+  <dirname property="module.box4dead.basedir" file="${ant.file.module_box4dead}"/>
+  
+  <property name="module.jdk.home.box4dead" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.box4dead" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.box4dead" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.box4dead" value="-encoding UTF-8 -source 1.8 -target 1.8 ${compiler.args}"/>
+  
+  <property name="box4dead.output.dir" value="${module.box4dead.basedir}/classes/production/box4dead"/>
+  <property name="box4dead.testoutput.dir" value="${module.box4dead.basedir}/classes/test/box4dead"/>
+  
+  <path id="box4dead.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="box4dead.module.production.classpath">
+    <path refid="${module.jdk.classpath.box4dead}"/>
+  </path>
+  
+  <path id="box4dead.runtime.production.module.classpath">
+    <pathelement location="${box4dead.output.dir}"/>
+  </path>
+  
+  <path id="box4dead.module.classpath">
+    <path refid="${module.jdk.classpath.box4dead}"/>
+    <pathelement location="${box4dead.output.dir}"/>
+  </path>
+  
+  <path id="box4dead.runtime.module.classpath">
+    <pathelement location="${box4dead.testoutput.dir}"/>
+    <pathelement location="${box4dead.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.box4dead">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.box4dead">
+    <patternset refid="excluded.from.module.box4dead"/>
+  </patternset>
+  
+  
+  <target name="compile.module.box4dead" depends="compile.module.box4dead.production,compile.module.box4dead.tests" description="Compile module box4dead"/>
+  
+  <target name="compile.module.box4dead.production" depends="register.custom.compilers" description="Compile module box4dead; production classes"/>
+  
+  <target name="compile.module.box4dead.tests" depends="register.custom.compilers,compile.module.box4dead.production" description="compile module box4dead; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.box4dead" description="cleanup module">
+    <delete dir="${box4dead.output.dir}"/>
+    <delete dir="${box4dead.testoutput.dir}"/>
+  </target>
+</project>
